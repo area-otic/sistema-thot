@@ -6,6 +6,7 @@ include '../control/check_session.php';
 $username = $nombre = $apellido = $email = $tipousuario = $estado = $password = '';
 $id = null;
 $isEdit = false;
+$isAdminUser = false; // Bandera para identificar si es el usuario admin
 
 // Verificar si es una edición (se pasó ID por GET)
 if(isset($_GET['id']) && !empty($_GET['id'])) {
@@ -29,6 +30,11 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
             $tipousuario = $usuario['tipousuario'];
             $estado = $usuario['estado'];
             
+            // Verificar si es el usuario admin
+            if($username === 'admin') {
+                $isAdminUser = true;
+            }
+            
         } else {
             header("Location: gestion_usuarios.php?error=Usuario no encontrado");
             exit();
@@ -50,16 +56,28 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $estado = trim($_POST['estado']);
     $password = trim($_POST['password']);
     
+    // Verificar si es admin y prevenir cambios no permitidos
+    if($isAdminUser) {
+        // Mantener los valores originales para campos protegidos
+        $username = 'admin';
+        $tipousuario = 'Administrador';
+        $estado = 'Activo';
+    }
+    
     try {
         if($isEdit) {
             // Actualizar registro existente
             $sql = "UPDATE data_usuarios SET 
-                nombreusuario = :username,
                 nombre = :nombre,
                 apellido = :apellido,
-                email = :email,
-                tipousuario = :tipousuario,
-                estado = :estado";
+                email = :email";
+            
+            // Solo actualizar estos campos si no es el admin
+            if(!$isAdminUser) {
+                $sql .= ", nombreusuario = :username,
+                        tipousuario = :tipousuario,
+                        estado = :estado";
+            }
             
             // Agregar contraseña solo si se proporcionó
             if(!empty($password)) {
@@ -82,12 +100,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         // Bind parameters
-        $stmt->bindParam(':username', $username);
         $stmt->bindParam(':nombre', $nombre);
         $stmt->bindParam(':apellido', $apellido);
         $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':tipousuario', $tipousuario);
-        $stmt->bindParam(':estado', $estado);
+        
+        // Solo bindear estos si no es el admin
+        if(!$isAdminUser || !$isEdit) {
+            $stmt->bindParam(':username', $username);
+            $stmt->bindParam(':tipousuario', $tipousuario);
+            $stmt->bindParam(':estado', $estado);
+        }
         
         // Bind password si se proporcionó o es nuevo usuario
         if(!empty($password) || !$isEdit) {
@@ -153,12 +175,17 @@ include '../includes/header.php';
             <div class="col-md-6">
             <div class="mb-3">
                 <label class="form-label" for="usuario-estado">Estado*</label>
-                <select class="form-select" name="estado" id="usuario-estado" required>
+                <select class="form-select" name="estado" id="usuario-estado" <?php echo $isAdminUser ? 'disabled' : 'required'; ?>>
                 <option value="">Seleccionar estado</option>
-                <option value="activo" <?php echo ($estado == 'activo') ? 'selected' : ''; ?>>Activo</option>
-                <option value="inactivo" <?php echo ($estado == 'inactivo') ? 'selected' : ''; ?>>Inactivo</option>
+                <option value="Activo" <?php echo ($estado == 'Activo') ? 'selected' : ''; ?>>Activo</option>
+                <option value="Inactivo" <?php echo ($estado == 'Inactivo') ? 'selected' : ''; ?>>Inactivo</option>
                 </select>
-                <div class="invalid-feedback">Por favor seleccione el estado</div>
+                <?php if($isAdminUser): ?>
+                    <input type="hidden" name="estado" value="Activo">
+                    <small class="text-muted">El estado del administrador no puede cambiarse</small>
+                <?php else: ?>
+                    <div class="invalid-feedback">Por favor seleccione el estado</div>
+                <?php endif; ?>
             </div>
             </div>
         </div>
@@ -168,25 +195,38 @@ include '../includes/header.php';
             <div class="col-md-6">
             <div class="mb-3">
                 <label class="form-label" for="username">Nombre de Usuario*</label>
-                <input type="text" class="form-control" name="username" id="username" 
-                       placeholder="Nombre de usuario" value="<?php echo htmlspecialchars($username); ?>" required>
-                <div class="invalid-feedback">Por favor ingrese el nombre de usuario</div>
+                <?php if($isAdminUser): ?>
+                    <input type="text" class="form-control" value="admin" readonly>
+                    <input type="hidden" name="username" value="admin">
+                    <small class="text-muted">El nombre de usuario admin no puede modificarse</small>
+                <?php else: ?>
+                    <input type="text" class="form-control" name="username" id="username" 
+                           placeholder="Nombre de usuario" value="<?php echo htmlspecialchars($username); ?>" required>
+                    <div class="invalid-feedback">Por favor ingrese el nombre de usuario</div>
+                <?php endif; ?>
             </div>
             </div>
             <div class="col-md-6">
             <div class="mb-3">
                 <label class="form-label" for="tipousuario">Tipo de Usuario*</label>
-                <select class="form-select" name="tipousuario" id="tipousuario" required>
-                <option value="">Seleccionar tipo</option>
-                <option value="Administrador" <?php echo ($tipousuario == 'Administrador') ? 'selected' : ''; ?>>Administrador</option>
-                <option value="Gestor" <?php echo ($tipousuario == 'Gestor') ? 'selected' : ''; ?>>Gestor</option>
-                <option value="Suscriptor" <?php echo ($tipousuario == 'Suscriptor') ? 'selected' : ''; ?>>Suscriptor</option>
-                </select>
-                <div class="invalid-feedback">Por favor seleccione el tipo de usuario</div>
+                <?php if($isAdminUser): ?>
+                    <input type="text" class="form-control" value="Administrador" readonly>
+                    <input type="hidden" name="tipousuario" value="Administrador">
+                    <small class="text-muted">El tipo de usuario admin no puede modificarse</small>
+                <?php else: ?>
+                    <select class="form-select" name="tipousuario" id="tipousuario" required>
+                    <option value="">Seleccionar tipo</option>
+                    <option value="Administrador" <?php echo ($tipousuario == 'Administrador') ? 'selected' : ''; ?>>Administrador</option>
+                    <option value="Gestor" <?php echo ($tipousuario == 'Gestor') ? 'selected' : ''; ?>>Gestor</option>
+                    <option value="Suscriptor" <?php echo ($tipousuario == 'Suscriptor') ? 'selected' : ''; ?>>Suscriptor</option>
+                    </select>
+                    <div class="invalid-feedback">Por favor seleccione el tipo de usuario</div>
+                <?php endif; ?>
             </div>
             </div>
         </div>
 
+        <!-- Resto del formulario permanece igual -->
         <!-- Fila 3 - Contraseña (solo para nuevos o si se quiere cambiar) -->
         <div class="row mb-2">
             <div class="col-md-6">
@@ -260,7 +300,7 @@ include '../includes/header.php';
    <!-- jQuery -->
    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 
-<script>
+   <script>
         // Validación de formulario
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('formUsuario');

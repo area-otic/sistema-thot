@@ -23,7 +23,7 @@ include '../includes/header.php';
     ?>
     <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Doctorados/</span> Registros</h4>
 
-    <!--<<div class="card mb-4">
+    <!--<div class="card mb-4">
         <h5 class="card-header">Filtros de búsqueda</h5>
             <div class="card-body">
                 <div class="row gx-3 gy-2 align-items-center">
@@ -57,7 +57,7 @@ include '../includes/header.php';
           </div>
         </div>
         <div class="table-responsive text-nowrap" style="margin: 20px;">
-            <table id="tabla-maestrias" class="datatables-basic table table-bordered table-responsive dataTable dtr-column collapsed" >
+            <table id="tabla-doctorados" class="datatables-basic table table-bordered table-responsive dataTable dtr-column collapsed" >
                 <thead>
                     <tr >
                         <th>ID</th>
@@ -210,7 +210,7 @@ include '../includes/header.php';
 
 <script>
         $(document).ready(function() {
-            $('#tabla-doctorado').DataTable({
+            $('#tabla-doctorados').DataTable({
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' // Español
                 },

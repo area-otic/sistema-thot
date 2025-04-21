@@ -1,18 +1,14 @@
-<!-- Footer -->
-<footer class="content-footer footer bg-footer-theme">
+          <!-- Footer -->
+          <footer class="content-footer footer bg-footer-theme">
               <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
-                <div class="mb-2 mb-md-0">
-                  ©
+                <div class="mb-2 mb-md-0"> ©
                   <script>
-                    document.write(new Date().getFullYear());
+                      document.write(new Date().getFullYear());
                   </script>
                   , realizado por SSB
-            
-                </div>
-                <div>
                 </div>
               </div>
-</footer>
+          </footer>
             <!-- / Footer -->
 
             <div class="content-backdrop fade"></div>
@@ -33,7 +29,6 @@
     <!-- build:js assets/vendor/js/core.js-->
     <script src="../assets/js/jquery.js"></script> 
     <script src="../assets/js/popper.js"></script>
-
     <script src="../assets/js/bootstrap.js"></script>
     <script src="../assets/js/perfect-scrollbar.js"></script>
 
@@ -45,7 +40,9 @@
 
     <!-- Main JS -->
     <script src="../assets/js/menu.js"></script>
+    
     <script src="../assets/js/main.js"></script>
+    
 
     <script>
       function confirmarCerrarSesion(event) {

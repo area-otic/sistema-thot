@@ -3,7 +3,7 @@ include '../includes/db.php';
 include '../control/check_session.php';
 
 // Inicializar variables
-$nombre_persona = $imagen_url = $testimonio = $programa_cursado = $pais = $estado = '';
+$nombreuniversidad = $descripcion = $imagen_url = $pais = $sitio_web = $tipo_institucion = $convenio = $estado = '';
 $id = null;
 $isEdit = false;
 
@@ -12,25 +12,27 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
     $id = $_GET['id'];
     $isEdit = true;
     
-    // Obtener datos del testimonio
+    // Obtener datos de la universidad
     try {
-        $stmt = $conn->prepare("SELECT * FROM data_testimonios WHERE id = :id");
+        $stmt = $conn->prepare("SELECT * FROM data_universidades WHERE id = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
         
         if($stmt->rowCount() > 0) {
-            $testimonio_data = $stmt->fetch(PDO::FETCH_ASSOC);
+            $universidad = $stmt->fetch(PDO::FETCH_ASSOC);
             
             // Asignar valores a las variables
-            $nombre_persona = $testimonio_data['nombre_persona'];
-            $imagen_url = $testimonio_data['imagen_url'];
-            $testimonio = $testimonio_data['testimonio'];
-            $programa_cursado = $testimonio_data['programa_cursado'];
-            $pais = $testimonio_data['pais'];
-            $estado = $testimonio_data['estado'];
+            $nombreuniversidad = $universidad['nombreuniversidad'];
+            $descripcion = $universidad['descripcion'];
+            $imagen_url = $universidad['imagen_url'];
+            $pais = $universidad['pais'];
+            $sitio_web = $universidad['sitio_web'];
+            $tipo_institucion = $universidad['tipo_institucion'];
+            $convenio = $universidad['convenio'];
+            $estado = $universidad['estado'];
             
         } else {
-            header("Location: gestion_testimonios.php?error=Testimonio no encontrado");
+            header("Location: gestion_testimonios.php?error=Universidad no encontrada");
             exit();
         }
     } catch(PDOException $e) {
@@ -42,11 +44,13 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
 // Procesar el formulario cuando se envía
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Recoger y sanitizar los datos del formulario
-    $nombre_persona = trim($_POST['nombre_persona']);
+    $nombreuniversidad = trim($_POST['nombreuniversidad']);
+    $descripcion = trim($_POST['descripcion']);
     $imagen_url = trim($_POST['imagen_url']);
-    $testimonio = trim($_POST['testimonio']);
-    $programa_cursado = trim($_POST['programa_cursado']);
     $pais = trim($_POST['pais']);
+    $sitio_web = trim($_POST['sitio_web']);
+    $tipo_institucion = trim($_POST['tipo_institucion']);
+    $convenio = trim($_POST['convenio']);
     $estado = trim($_POST['estado']);
     $user_encargado = $_SESSION['username']; // Obtener el usuario de la sesión
     
@@ -55,11 +59,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Campos requeridos
     $requiredFields = [
-        'nombre_persona' => 'Nombre de la persona',
-        'imagen_url' => 'URL de la imagen',
-        'testimonio' => 'Testimonio',
-        'programa_cursado' => 'Programa cursado',
+        'nombreuniversidad' => 'Nombre de la universidad',
+        'descripcion' => 'Descripción',
         'pais' => 'País',
+        'tipo_institucion' => 'Tipo de institución',
         'estado' => 'Estado'
     ];
     
@@ -69,62 +72,73 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
     
+    // Validar URL de imagen si se proporcionó
+    if (!empty($imagen_url)) {
+        if (!filter_var($imagen_url, FILTER_VALIDATE_URL)) {
+            $errors[] = "La URL de la imagen no es válida";
+        }
+    }
+    
     // Si no hay errores, procesar
     if (empty($errors)) {
         try {
             if($isEdit) {
                 // Actualizar registro existente
-                $stmt = $conn->prepare("UPDATE data_testimonios SET 
-                    nombre_persona = :nombre_persona,
+                $stmt = $conn->prepare("UPDATE data_universidades SET 
+                    nombreuniversidad = :nombreuniversidad,
+                    descripcion = :descripcion,
                     imagen_url = :imagen_url,
-                    testimonio = :testimonio,
-                    programa_cursado = :programa_cursado,
                     pais = :pais,
+                    sitio_web = :sitio_web,
+                    tipo_institucion = :tipo_institucion,
+                    convenio = :convenio,
                     estado = :estado,
                     user_encargado = :user_encargado,
-                    fecha_modificacion = NOW()
+                    fecha_modificada = NOW()
                     WHERE id = :id");
                     
                 $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             } else {
                 // Insertar nuevo registro
-                $stmt = $conn->prepare("INSERT INTO data_testimonios (
-                    nombre_persona, imagen_url, testimonio, programa_cursado, 
-                    pais, estado, user_encargado, fecha_creacion, fecha_modificacion
+                $stmt = $conn->prepare("INSERT INTO data_universidades (
+                    nombreuniversidad, descripcion, imagen_url, pais, sitio_web, 
+                    tipo_institucion, convenio, estado, user_encargado, fecha_creacion, fecha_modificada
                 ) VALUES (
-                    :nombre_persona, :imagen_url, :testimonio, :programa_cursado,
-                    :pais, :estado, :user_encargado, NOW(), NOW()
+                    :nombreuniversidad, :descripcion, :imagen_url, :pais, :sitio_web,
+                    :tipo_institucion, :convenio, :estado, :user_encargado, NOW(), NOW()
                 )");
             }
             
             // Bind parameters
-            $stmt->bindParam(':nombre_persona', $nombre_persona);
+            $stmt->bindParam(':nombreuniversidad', $nombreuniversidad);
+            $stmt->bindParam(':descripcion', $descripcion);
             $stmt->bindParam(':imagen_url', $imagen_url);
-            $stmt->bindParam(':testimonio', $testimonio);
-            $stmt->bindParam(':programa_cursado', $programa_cursado);
             $stmt->bindParam(':pais', $pais);
+            $stmt->bindParam(':sitio_web', $sitio_web);
+            $stmt->bindParam(':tipo_institucion', $tipo_institucion);
+            $stmt->bindParam(':convenio', $convenio);
             $stmt->bindParam(':estado', $estado);
             $stmt->bindParam(':user_encargado', $user_encargado);
             
             // Ejecutar
             if($stmt->execute()) {
-                $msg = $isEdit ? "Testimonio actualizado correctamente" : "Testimonio registrado correctamente";
-                header("Location: gestion_testimonios.php?success=" . urlencode($msg));
+                $msg = $isEdit ? "Universidad actualizada correctamente" : "Universidad registrada correctamente";
+                header("Location: gestion_universidades.php?success=" . urlencode($msg));
                 exit();
             } else {
-                $error = $isEdit ? "Error al actualizar el testimonio" : "Error al registrar el testimonio";
-                header("Location: registrar_testimonio.php?id=$id&error=" . urlencode($error));
+                $error = $isEdit ? "Error al actualizar la universidad" : "Error al registrar la universidad";
+                header("Location: registrar_universidad.php?id=$id&error=" . urlencode($error));
                 exit();
             }
         } catch(PDOException $e) {
             $error = "Error en la base de datos: " . $e->getMessage();
-            header("Location: registrar_testimonio.php?id=$id&error=" . urlencode($error));
+            header("Location: registrar_universidad.php?id=$id&error=" . urlencode($error));
             exit();
         }
         
     } else {
         $error = implode("<br>", $errors);
-        header("Location: registrar_testimonio.php?id=$id&error=" . urlencode($error));
+        header("Location: registrar_universidad.php?id=$id&error=" . urlencode($error));
         exit();
     }
 }
@@ -136,10 +150,10 @@ include '../includes/header.php';
 <div class="container-xxl flex-grow-1 container-p-y">
 <h4 class="fw-bold py-3 mb-4">
     <span class="text-muted fw-light">
-        Testimonios / 
-        <a href="../pages/gestion_testimonios.php" class=" text-primary text-decoration-none">Registros</a> / 
+        Universidades / 
+        <a href="../pages/gestion_universidades.php" class=" text-primary text-decoration-none">Registros</a> / 
     </span>
-    <?php echo $isEdit ? 'Editar Testimonio' : 'Agregar Nuevo Testimonio'; ?>
+    <?php echo $isEdit ? 'Editar Universidad' : 'Agregar Nueva Universidad'; ?>
 </h4>
     <?php if (isset($_GET['success'])): ?>
     <div class="alert alert-success"><?php echo htmlspecialchars($_GET['success']); ?></div>
@@ -150,9 +164,9 @@ include '../includes/header.php';
     <?php endif; ?>
     
     <div class="card">
-      <h5 class="card-header">Información del Testimonio</h5>
+      <h5 class="card-header">Información de la Universidad</h5>
       <div class="card-body">
-      <form class="needs-validation" id="formTestimonio" method="POST" novalidate>
+      <form class="needs-validation" id="formUniversidad" method="POST" novalidate>
         <!-- Campo oculto para el ID en caso de edición -->
         <?php if($isEdit): ?>
         <input type="hidden" name="id" value="<?php echo $id; ?>">
@@ -162,8 +176,8 @@ include '../includes/header.php';
         <div class="row mb-2">
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label" for="testimonio-id">ID</label>
-                <input type="text" class="form-control" name="testimonio-id" id="testimonio-id" 
+                <label class="form-label" for="universidad-id">ID</label>
+                <input type="text" class="form-control" name="universidad-id" id="universidad-id" 
                        value="<?php echo $isEdit ? $id : 'Generado automáticamente'; ?>" readonly>
             </div>
             </div>
@@ -180,41 +194,68 @@ include '../includes/header.php';
             </div>
         </div>
 
-        <!-- Fila 2 - Nombre de la persona y País -->
+        <!-- Fila 2 - Nombre de la universidad y País -->
         <div class="row mb-2">
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label" for="nombre_persona">Nombre de la persona*</label>
-                <input type="text" class="form-control" name="nombre_persona" id="nombre_persona" 
-                       placeholder="Nombre completo" value="<?php echo htmlspecialchars($nombre_persona); ?>" required>
-                <div class="invalid-feedback">Por favor ingrese el nombre</div>
+                <label class="form-label" for="nombreuniversidad">Nombre de la Universidad*</label>
+                <input type="text" class="form-control" name="nombreuniversidad" id="nombreuniversidad" 
+                       placeholder="Nombre completo de la universidad" value="<?php echo htmlspecialchars($nombreuniversidad); ?>" required>
+                <div class="invalid-feedback">Por favor ingrese el nombre de la universidad</div>
             </div>
             </div>
             <div class="col-md-6">
             <div class="mb-3">
                 <label class="form-label" for="pais">País*</label>
                 <input type="text" class="form-control" name="pais" id="pais" 
-                       placeholder="País de origen" value="<?php echo htmlspecialchars($pais); ?>" required>
+                       placeholder="País donde se encuentra" value="<?php echo htmlspecialchars($pais); ?>" required>
                 <div class="invalid-feedback">Por favor ingrese el país</div>
             </div>
             </div>
         </div>
 
-        <!-- Fila 3 - Programa cursado y Imagen URL -->
+        <!-- Fila 3 - Tipo de institución y Convenio -->
         <div class="row mb-2">
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label" for="programa_cursado">Programa cursado*</label>
-                <input type="text" class="form-control" name="programa_cursado" id="programa_cursado" 
-                       placeholder="Nombre del programa" value="<?php echo htmlspecialchars($programa_cursado); ?>" required>
-                <div class="invalid-feedback">Por favor ingrese el programa cursado</div>
+                <label class="form-label" for="tipo_institucion">Tipo de Institución*</label>
+                <select class="form-select" name="tipo_institucion" id="tipo_institucion" required>
+                <option value="">Seleccionar tipo</option>
+                <option value="Pública" <?php echo ($tipo_institucion == 'Pública') ? 'selected' : ''; ?>>Pública</option>
+                <option value="Privada" <?php echo ($tipo_institucion == 'Privada') ? 'selected' : ''; ?>>Privada</option>
+                <option value="Mixta" <?php echo ($tipo_institucion == 'Mixta') ? 'selected' : ''; ?>>Mixta</option>
+                </select>
+                <div class="invalid-feedback">Por favor seleccione el tipo de institución</div>
             </div>
             </div>
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label" for="imagen_url">Imagen URL*</label>
+                <label class="form-label" for="convenio">Convenio</label>
+                <select class="form-select" name="convenio" id="convenio">
+                <option value="">Seleccionar estado de convenio</option>
+                <option value="Si" <?php echo ($convenio == 'Si') ? 'selected' : ''; ?>>Sí</option>
+                <option value="No" <?php echo ($convenio == 'No') ? 'selected' : ''; ?>>No</option>
+                <option value="En proceso" <?php echo ($convenio == 'En proceso') ? 'selected' : ''; ?>>En proceso</option>
+                </select>
+            </div>
+            </div>
+        </div>
+
+        <!-- Fila 4 - Sitio web y Imagen URL -->
+        <div class="row mb-2">
+            <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label" for="sitio_web">Sitio Web</label>
+                <input type="text" class="form-control" name="sitio_web" id="sitio_web" 
+                       placeholder="www.universidad.edu" value="<?php echo htmlspecialchars($sitio_web); ?>">
+                <small class="text-muted">Ingrese el sitio web sin http:// o https://</small>
+            </div>
+            </div>
+            <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label" for="imagen_url">Imagen URL</label>
                 <input type="url" class="form-control" name="imagen_url" id="imagen_url" 
-                       placeholder="https://ejemplo.com/imagen.jpg" value="<?php echo htmlspecialchars($imagen_url); ?>" required>
+                       placeholder="https://ejemplo.com/imagen.jpg" value="<?php echo htmlspecialchars($imagen_url); ?>">
                 <div class="invalid-feedback">Por favor ingrese una URL válida de imagen</div>
                 <?php if($isEdit && !empty($imagen_url)): ?>
                 <div class="mt-2">
@@ -226,19 +267,19 @@ include '../includes/header.php';
             </div>
         </div>
 
-        <!-- Fila 4 - Testimonio -->
+        <!-- Fila 5 - Descripción -->
         <div class="row mb-2">
             <div class="col-12">
             <div class="mb-3">
-                <label class="form-label" for="testimonio">Testimonio*</label>
-                <textarea class="form-control" name="testimonio" id="testimonio" 
-                          rows="5" required><?php echo htmlspecialchars($testimonio); ?></textarea>
-                <div class="invalid-feedback">Por favor ingrese el testimonio</div>
+                <label class="form-label" for="descripcion">Descripción*</label>
+                <textarea class="form-control" name="descripcion" id="descripcion" 
+                          rows="5" required><?php echo htmlspecialchars($descripcion); ?></textarea>
+                <div class="invalid-feedback">Por favor ingrese la descripción</div>
             </div>
             </div>
         </div>
 
-        <!-- Fila 5 - Usuario Encargado -->
+        <!-- Fila 6 - Usuario Encargado -->
         <div class="row mb-2">
             <div class="col-12">
                 <div class="mb-3">
@@ -259,9 +300,9 @@ include '../includes/header.php';
         <div class="row">
             <div class="col-12">
             <div class="d-flex justify-content-between">
-                <a href="gestion_testimonios.php" class="btn btn-secondary">Cancelar</a>
+                <a href="gestion_universidades.php" class="btn btn-secondary">Cancelar</a>
                 <button type="submit" class="btn btn-primary">
-                    <?php echo $isEdit ? 'Actualizar Testimonio' : 'Guardar Testimonio'; ?>
+                    <?php echo $isEdit ? 'Actualizar Universidad' : 'Guardar Universidad'; ?>
                 </button>
             </div>
             </div>
@@ -279,7 +320,7 @@ include '../includes/header.php';
 <script>
         // Validación de formulario
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('formTestimonio');
+            const form = document.getElementById('formUniversidad');
             
             if (form) {
                 form.addEventListener('submit', function(e) {
@@ -292,8 +333,8 @@ include '../includes/header.php';
             }
             
             // Configuración de DataTable si existe la tabla
-            if ($('#tabla-testimonios').length) {
-                $('#tabla-testimonios').DataTable({
+            if ($('#tabla-universidades').length) {
+                $('#tabla-universidades').DataTable({
                     language: {
                         url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
                     },

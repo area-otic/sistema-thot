@@ -56,9 +56,9 @@ include '../includes/header.php';
               <a class="btn btn-primary" href='registrar_maestria.php'>Registrar Maestría</a>  
           </div>
         </div>
-        <div style="margin: 20px;">
-            <table id="tabla-maestrias" class="datatables-basic table table-bordered dataTable dtr-column collapsed" >
-                <thead>
+        <div class="table-responsive " style="margin: 20px;">
+            <table id="tabla-maestrias" class="datatables-basic table table-bordered  text-nowrap dataTable dtr-column collapsed" >
+                <thead >
                     <tr >
                         <th>ID</th>
                         <th>Título</th>
@@ -79,7 +79,7 @@ include '../includes/header.php';
                                 <td>" . ($row['universidad'] ?? 'N/A') . "</td>                                
                                 <td>" . ($row['pais'] ?? 'N/A') . "</td>
                                 <td><span class='badge " . ($row['estado_programa'] == 'Publicado' ? 'bg-label-success' : 'bg-label-secondary') . "'>" . ($row['estado_programa'] ?? 'N/A') . "</span></td>
-                                <td>
+                                <td >
                                     <button
                                         type='button'
                                         class='btn btn-secondary btn-sm btn-ver'
@@ -214,7 +214,6 @@ include '../includes/header.php';
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' // Español
                 },
-                autoWidth: true,
                 scrollX: false,
                 responsive: true, // Hace que la tabla sea responsive
                 ordering: true, // Permite ordenar las columnas

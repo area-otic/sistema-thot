@@ -41,7 +41,10 @@
 
     <!-- SweetAlert JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Helpers -->
+
+    <link rel="stylesheet" href="../assets/apex-charts/apex-charts.css" />
+
+   <!-- Helpers -->
     <script src="../assets/js/helpers.js"></script>
 
     <script src="../assets/js/config.js"></script>
@@ -54,7 +57,7 @@
 
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
           <div class="app-brand demo">
-            <a href="index.html" class="app-brand-link">
+            <a href="../pages/dashboard.php" class="app-brand-link">
               <span class="app-brand-text fw-bolder ms-2">THOT Admin</span>
             </a>
 
@@ -103,7 +106,7 @@
               </a>
             </li>
             <li class="menu-item">
-              <a href="../pages/gestion_instituciones.php" class="menu-link">
+              <a href="../pages/gestion_universidades.php" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-building"></i>
                 <div data-i18n="Tables">Universidades</div>
               </a>

@@ -122,7 +122,7 @@ include '../includes/header.php';
                                 <td>" . ($row['nombre'] ?? 'N/A') . "</td>
                                 <td>" . ($row['apellido'] ?? 'N/A') . "</td>
                                 <td>" . ($row['tipousuario'] ?? 'N/A') . "</td>
-                                <td><span class='badge " . ($row['estado'] == 'activo' ? 'bg-label-success' : 'bg-label-secondary') . "'>" . ($row['estado'] ?? 'N/A') . "</span></td>
+                                <td><span class='badge " . ($row['estado'] == 'Activo' ? 'bg-label-success' : 'bg-label-secondary') . "'>" . ($row['estado'] ?? 'N/A') . "</span></td>
                                 <td>
                                     <button
                                         type='button'
