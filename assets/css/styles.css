@@ -1,0 +1,86 @@
+body {
+    background-color: #f8f9fa;
+    overflow-x: hidden; /* Evita el desbordamiento horizontal */
+}
+
+#sidebar {
+    background-color: #007bff;
+    color: #fff;
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 100vh;
+    transition: all 0.3s;
+}
+
+#sidebar.active {
+    margin-left: -250px; /* Oculta la barra lateral en móviles */
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background-color: #0056b3;
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+}
+
+#sidebar ul li a {
+    padding: 10px;
+    font-size: 1.1em;
+    display: block;
+    color: #fff;
+}
+
+#sidebar ul li a:hover {
+    background-color: #0056b3;
+}
+
+#content {
+    width: 100%;
+    padding: 20px;
+    min-height: 100vh;
+    transition: all 0.3s;
+}
+
+.navbar {
+    padding: 15px 10px;
+    background: #fff;
+    border: none;
+    border-radius: 0;
+    margin-bottom: 40px;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-info {
+    background-color: #ff8c00;
+    border-color: #ff8c00;
+}
+
+.btn-info:hover {
+    background-color: #e07b00;
+    border-color: #e07b00;
+}
+
+/* Estilos para pantallas pequeñas */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -250px; /* Oculta la barra lateral por defecto en móviles */
+    }
+
+    #sidebar.active {
+        margin-left: 0; /* Muestra la barra lateral cuando está activa */
+    }
+
+    #content {
+        width: 100%;
+    }
+
+    #content.active {
+        width: calc(100% - 250px); /* Ajusta el contenido cuando la barra lateral está visible */
+    }
+
+    .navbar {
+        width: 100%;
+    }
+}
