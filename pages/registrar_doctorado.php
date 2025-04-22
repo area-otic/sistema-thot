@@ -149,13 +149,13 @@ include '../includes/header.php';
 ?>
 
 <div class="container-xxl flex-grow-1 container-p-y">
-<h4 class="fw-bold py-3 mb-4">
-    <span class="text-muted fw-light">
-       Doctorado / 
-        <a href="../pages/gestion_doctorado.php" class=" text-primary text-decoration-none">Registros</a> / 
-    </span>
-    <?php echo $isEdit ? 'Editar Doctorado' : 'Agregar Nueva Doctorado'; ?>
-</h4>
+    <h4 class="fw-bold py-3 mb-4">
+        <span class="text-muted fw-light">
+        Doctorado / 
+            <a href="../pages/gestion_doctorado.php" class=" text-primary text-decoration-none">Registros</a> / 
+        </span>
+        <?php echo $isEdit ? 'Editar Doctorado' : 'Agregar Nueva Doctorado'; ?>
+    </h4>
     <?php if (isset($_GET['success'])): ?>
     <div class="alert alert-success"><?php echo htmlspecialchars($_GET['success']); ?></div>
     <?php endif; ?>
@@ -361,6 +361,7 @@ include '../includes/header.php';
 
       </div>
     </div>
+</div>
 
    <!-- jQuery -->
    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>

@@ -52,7 +52,7 @@ include '../includes/header.php';
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Lista de Universidades</h5> <!-- Título a la izquierda -->
             <div>
-              <a class="btn btn-secondary" href='importar_universidad.php'>Importar</a>
+              <!--<a class="btn btn-secondary" href='importar_universidad.php'>Importar</a>-->
               <a class="btn btn-primary" href='registrar_universidad.php'>Registrar Universidad</a>  
           </div>
         </div>
@@ -194,9 +194,11 @@ include '../includes/header.php';
         </div>
     </div>
 
+</div>
 
-   <!-- jQuery -->
-   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>

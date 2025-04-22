@@ -77,73 +77,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Configuración /</span> Cuenta</h4>
 
     <div class="row">
-    <div class="col-md-12">
-        <ul class="nav nav-pills flex-column flex-md-row mb-3">
-            <li class="nav-item">
-                <a class="nav-link active" href="javascript:void(0);"><i class="bx bx-user me-1"></i> Cuenta</a>
-            </li>
-        </ul>
-        <div class="card mb-4">
-        <h5 class="card-header">Detalles del Perfil</h5>
+        <div class="col-md-12">
+            <ul class="nav nav-pills flex-column flex-md-row mb-3">
+                <li class="nav-item">
+                    <a class="nav-link active" href="javascript:void(0);"><i class="bx bx-user me-1"></i> Cuenta</a>
+                </li>
+            </ul>
+            <div class="card mb-4">
+            <h5 class="card-header">Detalles del Perfil</h5>
 
-        <hr class="my-0" />
-            <div class="card-body">
-                <form id="formcuentausuario" method="POST">
-                    <div class="row">
-                        <div class="mb-3 col-md-6">
-                            <label for="firstName" class="form-label">Nombre</label>
-                            <input class="form-control" type="text" id="firstName" name="firstName" 
-                                value="<?php echo htmlspecialchars($user_data['nombre'] ?? ''); ?>" autofocus />
-                        </div>
-                        <div class="mb-3 col-md-6">
-                            <label for="lastName" class="form-label">Apellido</label>
-                            <input class="form-control" type="text" name="lastName" id="lastName" 
-                                    value="<?php echo htmlspecialchars($user_data['apellido'] ?? ''); ?>" />
-                        </div>
-                        <div class="mb-3 col-md-6">
-                            <label for="email" class="form-label">E-mail</label>
-                            <input class="form-control" type="email" id="email" name="email" 
-                                value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" placeholder="ejemplo@dominio.com" />
-                        </div>
-                        <div class="mb-3 col-md-6">
-                            <label for="nombreusuario" class="form-label">Nombre de usuario</label>
-                            <input type="text" class="form-control" id="nombreusuario" name="nombreusuario" 
-                                value="<?php echo htmlspecialchars($user_data['nombreusuario'] ?? ''); ?>" />
-                        </div>
-                        <div class="mb-3 col-md-6 form-password-toggle">
-                            <div class="d-flex justify-content-between">
-                                <label class="form-label" for="password">Contraseña</label>                
+            <hr class="my-0" />
+                <div class="card-body">
+                    <form id="formcuentausuario" method="POST">
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                <label for="firstName" class="form-label">Nombre</label>
+                                <input class="form-control" type="text" id="firstName" name="firstName" 
+                                    value="<?php echo htmlspecialchars($user_data['nombre'] ?? ''); ?>" autofocus />
                             </div>
-                            <div class="input-group input-group-merge">
-                                <input type="password" id="password" class="form-control" name="password"
-                                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" 
-                                    aria-describedby="password" />
-                                <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                            <div class="mb-3 col-md-6">
+                                <label for="lastName" class="form-label">Apellido</label>
+                                <input class="form-control" type="text" name="lastName" id="lastName" 
+                                        value="<?php echo htmlspecialchars($user_data['apellido'] ?? ''); ?>" />
                             </div>
-                            <small class="text-muted">Dejar en blanco si no desea cambiar la contraseña</small>
+                            <div class="mb-3 col-md-6">
+                                <label for="email" class="form-label">E-mail</label>
+                                <input class="form-control" type="email" id="email" name="email" 
+                                    value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" placeholder="ejemplo@dominio.com" />
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                <label for="nombreusuario" class="form-label">Nombre de usuario</label>
+                                <input type="text" class="form-control" id="nombreusuario" name="nombreusuario" 
+                                    value="<?php echo htmlspecialchars($user_data['nombreusuario'] ?? ''); ?>" />
+                            </div>
+                            <div class="mb-3 col-md-6 form-password-toggle">
+                                <div class="d-flex justify-content-between">
+                                    <label class="form-label" for="password">Contraseña</label>                
+                                </div>
+                                <div class="input-group input-group-merge">
+                                    <input type="password" id="password" class="form-control" name="password"
+                                        placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" 
+                                        aria-describedby="password" />
+                                    <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                                </div>
+                                <small class="text-muted">Dejar en blanco si no desea cambiar la contraseña</small>
+                            </div>
+                                
+                            <div class="mb-3 col-md-6">
+                                <label for="tipo_usuario" class="form-label">Tipo de Usuario</label>
+                                <input type="text" class="form-control" id="tipo_usuario" 
+                                    value="<?php echo htmlspecialchars($user_data['tipousuario'] ?? ''); ?>" readonly />
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                <label for="estado" class="form-label">Estado de Usuario</label>
+                                <input type="text" class="form-control" id="estado" 
+                                        value="<?php echo htmlspecialchars($user_data['estado'] ?? ''); ?>" readonly />
+                            </div>
                         </div>
-                            
-                        <div class="mb-3 col-md-6">
-                            <label for="tipo_usuario" class="form-label">Tipo de Usuario</label>
-                            <input type="text" class="form-control" id="tipo_usuario" 
-                                value="<?php echo htmlspecialchars($user_data['tipousuario'] ?? ''); ?>" readonly />
+                        <div class="mt-2">
+                            <button type="submit" class="btn btn-primary me-2">Guardar cambios</button>
+                            <button type="reset" class="btn btn-outline-secondary">Cancelar</button>
                         </div>
-                        <div class="mb-3 col-md-6">
-                            <label for="estado" class="form-label">Estado de Usuario</label>
-                            <input type="text" class="form-control" id="estado" 
-                                    value="<?php echo htmlspecialchars($user_data['estado'] ?? ''); ?>" readonly />
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <button type="submit" class="btn btn-primary me-2">Guardar cambios</button>
-                        <button type="reset" class="btn btn-outline-secondary">Cancelar</button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-    </div>
-
+</div>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <!-- DataTables JS -->

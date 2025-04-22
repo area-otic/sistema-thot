@@ -8,6 +8,15 @@
   --gray: #95A5A6;
   --gradient: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
 }
+/*
+:root {
+  --azul-marino: #002366;
+  --azul-marino-claro: #1a4b8c;
+  --naranja: #FF7F11;
+  --naranja-claro: #FF9E40;
+  --gris-claro: #f8f9fa;
+  --blanco: #ffffff;
+}*/
 
 * {
   margin: 0;

@@ -287,6 +287,118 @@ include 'includes/db.php'; ?>
         </div>
     </div>
 
+    <!-- Gallery Section -->
+<section class="gallery-section" id="galeria">
+    <div class="section-container">
+        <div class="section-title" data-aos="fade-up">
+            <h2>Nuestra Galería</h2>
+            <p>Universidades con convenio activo</p>
+        </div>
+        
+        <div id="galleryGrid" class="gallery-grid">
+            <?php
+            // Consulta para universidades con convenio
+            $stmt = $conn->query("SELECT * FROM data_universidades 
+                                 WHERE convenio = 'Si' AND estado = 'Publicado'
+                                 ORDER BY nombreuniversidad ASC");
+            
+            // Mostrar cada universidad
+            while ($universidad = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                echo '
+                <div class="gallery-item" data-aos="fade-up">
+                    <a href="'.htmlspecialchars($universidad['imagen_url'] ?? 'img/default-university.jpg').'"
+                       data-fancybox="gallery"
+                       data-caption="'.htmlspecialchars($universidad['nombreuniversidad']).'"
+                       data-thumb="'.htmlspecialchars($universidad['imagen_url'] ?? 'img/default-university.jpg').'">
+                        <img src="'.htmlspecialchars($universidad['imagen_url'] ?? 'img/default-university.jpg').'" 
+                             alt="'.htmlspecialchars($universidad['nombreuniversidad']).'" 
+                             class="gallery-image">
+                        <div class="gallery-overlay">
+                            <h3 class="gallery-title">'.htmlspecialchars($universidad['nombreuniversidad']).'</h3>
+                            <p class="gallery-description">'.htmlspecialchars($universidad['descripcion'] ?? $universidad['pais'] ?? 'Convenio activo').'</p>
+                        </div>
+                    </a>
+                </div>';
+            }
+            
+            // Si no hay resultados
+            if ($stmt->rowCount() === 0) {
+                echo '<p class="no-results">No se encontraron universidades con convenio activo.</p>';
+            }
+            ?>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="section-container">
+        <div class="section-title" data-aos="fade-up">
+            <h2>Experiencias de Estudiantes</h2>
+            <p>Lo que dicen nuestros estudiantes sobre su experiencia</p>
+        </div>
+
+        <div class="testimonials-slider swiper" data-aos="fade-up">
+            <div class="swiper-wrapper" id="contenedor-testimonios">
+                <?php
+                // Consulta para obtener testimonios publicados
+                $stmt = $conn->query("SELECT * FROM data_testimonios WHERE estado = 'Publicado' ORDER BY fecha_creacion DESC");
+                
+                while ($testimonio = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    echo '
+                    <div class="swiper-slide">
+                        <div class="testimonial-card">
+                            <div class="testimonial-content">
+                                <div class="quote-icon">
+                                    <i class="fas fa-quote-right"></i>
+                                </div>
+                                <p class="testimonial-text">'.htmlspecialchars($testimonio['testimonio']).'</p>
+                                <div class="testimonial-author">
+                                    <img src="'.htmlspecialchars($testimonio['imagen_url'] ?? 'https://via.placeholder.com/60x60').'"
+                                         alt="'.htmlspecialchars($testimonio['nombre_persona']).'"
+                                         class="author-image">
+                                    <div class="author-info">
+                                        <h4>'.htmlspecialchars($testimonio['nombre_persona']).'</h4>
+                                        <p>'.htmlspecialchars($testimonio['programa_cursado'] ?? 'Programa destacado').'</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>';
+                }
+                
+                // Mostrar mensaje si no hay testimonios
+                if ($stmt->rowCount() === 0) {
+                    echo '<div class="no-testimonials">No hay testimonios disponibles actualmente</div>';
+                }
+                ?>
+            </div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Thoth Education</h3>
+                <p>Conectando estudiantes con las mejores oportunidades educativas en todo el mundo.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Enlaces Rápidos</h3>
+                <ul>
+                    <li><a href="#inicio">Inicio</a></li>
+                    <li><a href="#programas">Programas</a></li>
+                    <li><a href="#galeria">Galería</a></li>
+                    <li><a href="#contacto">Contacto</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Thoth Education. Todos los derechos reservados.</p>
+        </div>
+    </footer>
 
 
 <!-- Bootstrap (antes de cualquier script que lo use) -->
@@ -611,6 +723,34 @@ function mostrarProgramas(programas) {
     });
 }
 
+
+</script>
+
+<!-- Script para inicializar Swiper -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    new Swiper('.testimonials-slider', {
+        loop: true,
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true
+        },
+        slidesPerView: 1,
+        spaceBetween: 20,
+        breakpoints: {
+            768: {
+                slidesPerView: 2
+            },
+            1024: {
+                slidesPerView: 3
+            }
+        }
+    });
+});
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
 </body>

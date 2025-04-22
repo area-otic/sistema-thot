@@ -56,8 +56,8 @@ include '../includes/header.php';
               <a class="btn btn-primary" href='registrar_maestria.php'>Registrar Maestría</a>  
           </div>
         </div>
-        <div class="table-responsive " style="margin: 20px;">
-            <table id="tabla-maestrias" class="datatables-basic table table-bordered  text-nowrap dataTable dtr-column collapsed" >
+        <div class="table-responsive text-nowrap" style="margin: 20px;">
+            <table id="tabla-maestrias" class="datatables-basic table table-bordered  dataTable dtr-column collapsed" >
                 <thead >
                     <tr >
                         <th>ID</th>
@@ -65,7 +65,7 @@ include '../includes/header.php';
                         <th>Universidad</th>                        
                         <th>País</th>
                         <th>Estado</th>
-                        <th>Acciones</th>
+                        <th >Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -79,7 +79,7 @@ include '../includes/header.php';
                                 <td>" . ($row['universidad'] ?? 'N/A') . "</td>                                
                                 <td>" . ($row['pais'] ?? 'N/A') . "</td>
                                 <td><span class='badge " . ($row['estado_programa'] == 'Publicado' ? 'bg-label-success' : 'bg-label-secondary') . "'>" . ($row['estado_programa'] ?? 'N/A') . "</span></td>
-                                <td >
+                                <td>
                                     <button
                                         type='button'
                                         class='btn btn-secondary btn-sm btn-ver'
@@ -201,7 +201,7 @@ include '../includes/header.php';
       </div>
     </div>
 
-
+</div>
    <!-- jQuery -->
    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 

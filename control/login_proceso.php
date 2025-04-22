@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             // Verificar contraseña (compatible con texto plano y hash)
             if (password_verify($password, $user['contraseña'])) {
-                if ($user['estado'] === 'activo') {
+                if ($user['estado'] === 'Activo') {
                     // Crear sesión
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['username'] = $user['nombreusuario'];

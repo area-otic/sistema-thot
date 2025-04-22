@@ -100,7 +100,7 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
             'url' => trim($fila['url'] ?? ''),
             'estado_programa' => trim($fila['estado'] ?? 'Publicado'),
             'user_encargado' => trim($fila['encargado'] ?? ''),
-            'fecha_creacion' => $fecha_actual,
+            'fecha_creacion' => trim($fila['fecha_creado'] ?? ''),
             'fecha_modificada' => $fecha_actual
         ];
         

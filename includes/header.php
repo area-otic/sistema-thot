@@ -119,7 +119,7 @@
                 <div data-i18n="Support">Usuarios</div>
               </a>
             </li>
-            <li class="menu-item">
+            <!--<li class="menu-item">
               <a
                 href="https://themeselection.com/demo/sneat-bootstrap-html-admin-template/documentation/"
                 target="_blank"
@@ -127,7 +127,7 @@
                 <i class="menu-icon tf-icons bx bx-cog"></i>
                 <div data-i18n="Documentation">Accesos</div>
               </a>
-            </li>
+            </li>-->
           </ul>
         </aside>
         <!-- / Menu -->
