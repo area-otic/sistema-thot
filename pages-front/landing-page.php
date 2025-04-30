@@ -11,8 +11,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="robots" content="noindex" />
-    
-      <title>Demo: Landing Page - Front Pages | Sneat - Bootstrap Dashboard PRO</title>
+    <title>Demo: Landing Page - Front Pages | Sneat - Bootstrap Dashboard PRO</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../../assets/img/favicon/favicon.ico" />
@@ -23,12 +22,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="../assets/pages-front/iconify-icons.css" />
-
-    <!-- Core CSS -->
-    <!-- build:css assets/vendor/css/theme.css  -->
-    
       
-      <link rel="stylesheet" href="../assets/pages-front/pickr-themes.css" />
+    <link rel="stylesheet" href="../assets/pages-front/pickr-themes.css" />
     
     <link rel="stylesheet" href="../assets/pages-front/core.css" />
     <link rel="stylesheet" href="../assets/pages-front/demo.css" />
@@ -37,15 +32,13 @@
       <link rel="stylesheet" href="../assets/pages-front/front-page.css" />
     
     <!-- Vendors CSS -->
-    
-    <!-- endbuild -->
 
     <link rel="stylesheet" href=".../assets/pages-front/nouislider.css" />
-  <link rel="stylesheet" href="../assets/pages-front/swiper.css" />
+    <link rel="stylesheet" href="../assets/pages-front/swiper.css" />
 
     <!-- Page CSS -->
     
-  <link rel="stylesheet" href="../assets/pages-front/front-page-landing.css" />
+    <link rel="stylesheet" href="../assets/pages-front/front-page-landing.css" />
 
     <!-- Helpers -->
     <script src="../assets/pages-front/helpers.js"></script>
@@ -59,15 +52,6 @@
       <script src="../assets/pages-front/front-config.js"></script>
     
   </head>
-
-  <body>
-    
-      <!-- ?PROD Only: Google Tag Manager (noscript) (Default ThemeSelection: GTM-5DDHKGP, PixInvent: GTM-5J3LMKC) -->
-      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5DDHKGP" height="0" width="0" style="display: none; visibility: hidden"></iframe></noscript>
-      <!-- End Google Tag Manager (noscript) -->
-    
-    
-
 
 <script src="../assets/pages-front/dropdown-hover.js"></script>
   <script src="../assets/pages-front/mega-dropdown.js"></script><!-- Navbar: Start -->
@@ -1491,37 +1475,23 @@
       </div>
     </div>
   </div>
+
+
+
 </footer>
 <!-- Footer: End -->
-
-
-    
-      <div class="buy-now">
-        <a href="https://themeselection.com/item/sneat-dashboard-pro-bootstrap/" target="_blank" class="btn btn-danger btn-buy-now">Buy Now</a>
-      </div>
-    
-
-    
-
-    <!-- Core JS -->
-    <!-- build:js assets/vendor/js/theme.js  -->
-    
     
     <script src="../assets/pages-front/popper.js"></script>
     <script src="../assets/pages-front/bootstrap.js"></script>
     <script src="../assets/pages-front/autocomplete-js.js"></script>
 
-    
-      
-      <script src="../assets/pages-front/pickr.js"></script>
-    
-
+    <script src="../assets/pages-front/pickr.js"></script>
     
     <!-- endbuild -->
 
     <!-- Vendors JS -->
     <script src="../assets/pages-front/nouislider.js"></script>
-  <script src="../assets/pages-front/swiper.js"></script>
+    <script src="../assets/pages-front/swiper.js"></script>
 
     <!-- Main JS -->
     

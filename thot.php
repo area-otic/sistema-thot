@@ -288,98 +288,107 @@ include 'includes/db.php'; ?>
     </div>
 
     <!-- Gallery Section -->
-<section class="gallery-section" id="galeria">
-    <div class="section-container">
-        <div class="section-title" data-aos="fade-up">
-            <h2>Nuestra Galería</h2>
-            <p>Universidades con convenio activo</p>
-        </div>
-        
-        <div id="galleryGrid" class="gallery-grid">
-            <?php
-            // Consulta para universidades con convenio
-            $stmt = $conn->query("SELECT * FROM data_universidades 
-                                 WHERE convenio = 'Si' AND estado = 'Publicado'
-                                 ORDER BY nombreuniversidad ASC");
+    <section class="gallery-section" id="galeria">
+        <div class="section-container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>Nuestra Galería</h2>
+                <p>Universidades con convenio activo</p>
+            </div>
             
-            // Mostrar cada universidad
-            while ($universidad = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                echo '
-                <div class="gallery-item" data-aos="fade-up">
-                    <a href="'.htmlspecialchars($universidad['imagen_url'] ?? 'img/default-university.jpg').'"
-                       data-fancybox="gallery"
-                       data-caption="'.htmlspecialchars($universidad['nombreuniversidad']).'"
-                       data-thumb="'.htmlspecialchars($universidad['imagen_url'] ?? 'img/default-university.jpg').'">
-                        <img src="'.htmlspecialchars($universidad['imagen_url'] ?? 'img/default-university.jpg').'" 
-                             alt="'.htmlspecialchars($universidad['nombreuniversidad']).'" 
-                             class="gallery-image">
-                        <div class="gallery-overlay">
-                            <h3 class="gallery-title">'.htmlspecialchars($universidad['nombreuniversidad']).'</h3>
-                            <p class="gallery-description">'.htmlspecialchars($universidad['descripcion'] ?? $universidad['pais'] ?? 'Convenio activo').'</p>
-                        </div>
-                    </a>
-                </div>';
-            }
-            
-            // Si no hay resultados
-            if ($stmt->rowCount() === 0) {
-                echo '<p class="no-results">No se encontraron universidades con convenio activo.</p>';
-            }
-            ?>
+            <div id="galleryGrid" class="gallery-grid">
+                <!-- Los elementos se cargarán dinámicamente aquí -->
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Testimonials Section -->
-<section class="testimonials-section">
-    <div class="section-container">
-        <div class="section-title" data-aos="fade-up">
-            <h2>Experiencias de Estudiantes</h2>
-            <p>Lo que dicen nuestros estudiantes sobre su experiencia</p>
-        </div>
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <div class="section-container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>Experiencias de Estudiantes</h2>
+                <p>Lo que dicen nuestros estudiantes sobre su experiencia</p>
+            </div>
 
-        <div class="testimonials-slider swiper" data-aos="fade-up">
-            <div class="swiper-wrapper" id="contenedor-testimonios">
-                <?php
-                // Consulta para obtener testimonios publicados
-                $stmt = $conn->query("SELECT * FROM data_testimonios WHERE estado = 'Publicado' ORDER BY fecha_creacion DESC");
-                
-                while ($testimonio = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    echo '
-                    <div class="swiper-slide">
-                        <div class="testimonial-card">
-                            <div class="testimonial-content">
-                                <div class="quote-icon">
-                                    <i class="fas fa-quote-right"></i>
-                                </div>
-                                <p class="testimonial-text">'.htmlspecialchars($testimonio['testimonio']).'</p>
-                                <div class="testimonial-author">
-                                    <img src="'.htmlspecialchars($testimonio['imagen_url'] ?? 'https://via.placeholder.com/60x60').'"
-                                         alt="'.htmlspecialchars($testimonio['nombre_persona']).'"
-                                         class="author-image">
-                                    <div class="author-info">
-                                        <h4>'.htmlspecialchars($testimonio['nombre_persona']).'</h4>
-                                        <p>'.htmlspecialchars($testimonio['programa_cursado'] ?? 'Programa destacado').'</p>
+            <div class="testimonials-slider swiper" data-aos="fade-up">
+                <div class="swiper-wrapper" id="contenedor-testimonios">
+                    <?php
+                    // Consulta para obtener testimonios publicados
+                    $stmt = $conn->query("SELECT * FROM data_testimonios WHERE estado = 'Publicado' ORDER BY fecha_creacion DESC");
+                    
+                    while ($testimonio = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        echo '
+                        <div class="swiper-slide">
+                            <div class="testimonial-card">
+                                <div class="testimonial-content">
+                                    <div class="quote-icon">
+                                        <i class="fas fa-quote-right"></i>
+                                    </div>
+                                    <p class="testimonial-text">'.htmlspecialchars($testimonio['testimonio']).'</p>
+                                    <div class="testimonial-author">
+                                        <img src="'.htmlspecialchars($testimonio['imagen_url'] ?? 'https://via.placeholder.com/60x60').'"
+                                            alt="'.htmlspecialchars($testimonio['nombre_persona']).'"
+                                            class="author-image">
+                                        <div class="author-info">
+                                            <h4>'.htmlspecialchars($testimonio['nombre_persona']).'</h4>
+                                            <p>'.htmlspecialchars($testimonio['programa_cursado'] ?? 'Programa destacado').'</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>';
-                }
-                
-                // Mostrar mensaje si no hay testimonios
-                if ($stmt->rowCount() === 0) {
-                    echo '<div class="no-testimonials">No hay testimonios disponibles actualmente</div>';
-                }
-                ?>
+                        </div>';
+                    }
+                    
+                    // Mostrar mensaje si no hay testimonios
+                    if ($stmt->rowCount() === 0) {
+                        echo '<div class="no-testimonials">No hay testimonios disponibles actualmente</div>';
+                    }
+                    ?>
+                </div>
+                <div class="swiper-pagination"></div>
             </div>
-            <div class="swiper-pagination"></div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Footer -->
-<footer class="footer">
+    <!-- Contact Section -->
+    <section class="contact-section" id="contacto">
+        <div class="section-container">
+            <div class="contact-container">
+                <div class="contact-info" data-aos="fade-right">
+                    <div class="section-title">
+                        <h2>¿Necesitas Ayuda?</h2>
+                        <p>Estamos aquí para guiarte en tu camino académico</p>
+                    </div>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <h3>Email</h3>
+                                <p>info@thotheducation.com</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <h3>Horario de Atención</h3>
+                                <p>Lun - Vie: 9:00 AM - 6:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="iframe-wrapper">
+                    <iframe
+                    src="https://b24-atnnfq.bitrix24.site/crm_form_iq60u/"
+                    style="width: 100%; height: 600px; border: none;"
+                    title="Formulario Bitrix24"
+                    loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
                 <h3>Thoth Education</h3>
@@ -410,12 +419,11 @@ include 'includes/db.php'; ?>
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
-
 <script>
 // Variables globales
 let currentPage = 1;
 const programsPerPage = 8;
+
 
 // Inicializar AOS
 AOS.init({
@@ -497,35 +505,6 @@ function closeModal() {
     modal.style.display = 'none';
     document.body.style.overflow = 'auto';
 }
-
-// Event Listeners para el modal
-document.addEventListener('DOMContentLoaded', function() {
-    // Cerrar con el botón X
-    const closeButton = document.querySelector('.close');
-    if (closeButton) {
-        closeButton.addEventListener('click', function(e) {
-            e.stopPropagation();
-            closeModal();
-        });
-    }
-
-    // Cerrar cuando se hace clic fuera del modal
-    const modal = document.getElementById('programModal');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
-    }
-
-    // Cerrar con la tecla ESC
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
-    });
-});
 
 // Función para buscar programas con los filtros aplicados
 function buscarProgramas() {
@@ -723,10 +702,125 @@ function mostrarProgramas(programas) {
     });
 }
 
+// Función para cargar la galería de universidades
+function cargarGaleria() {
+    // Mostrar loader mientras carga
+    const galleryGrid = document.getElementById('galleryGrid');
+    galleryGrid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Cargando universidades...</div>';
+
+    fetch('control/galeria_universidad_handler.php')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || 'Error al cargar datos');
+            }
+
+            galleryGrid.innerHTML = '';
+
+            if (data.universidades && data.universidades.length > 0) {
+                data.universidades.forEach(universidad => {
+                    const imageUrl = universidad.imagen_url || 'img/default-university.jpg';
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item';
+                    galleryItem.setAttribute('data-aos', 'fade-up');
+                    
+                    galleryItem.innerHTML = `
+                        <a href="${imageUrl}"
+                           data-fancybox="gallery"
+                           data-caption="${universidad.nombreuniversidad}"
+                           data-thumb="${imageUrl}">
+                            <img src="${imageUrl}" 
+                                 alt="${universidad.nombreuniversidad}" 
+                                 class="gallery-image">
+                            <div class="gallery-overlay">
+                                <h3 class="gallery-title">${universidad.nombreuniversidad}</h3>
+                                <p class="gallery-description">${universidad.descripcion || universidad.pais || 'Convenio activo'}</p>
+                            </div>
+                        </a>
+                    `;
+                    galleryGrid.appendChild(galleryItem);
+                });
+
+                // Inicializar Fancybox si está disponible
+                if (typeof Fancybox !== 'undefined') {
+                    Fancybox.bind("[data-fancybox]", {
+                        // Opciones de Fancybox
+                    });
+                }
+            } else {
+                galleryGrid.innerHTML = '<p class="no-results">No se encontraron universidades con convenio activo.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            galleryGrid.innerHTML = '<p class="error-message">Error al cargar la galería de universidades.</p>';
+        });
+}
+
+// Función para inicializar Swiper
+function initTestimonialsSwiper() {
+    new Swiper('.testimonials-slider', {
+        loop: true,
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true
+        },
+        slidesPerView: 1,
+        spaceBetween: 20,
+        breakpoints: {
+            768: {
+                slidesPerView: 2
+            },
+            1024: {
+                slidesPerView: 3
+            }
+        }
+    });
+}
+
+
+// Event Listeners para el modal
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Cargar la galería al inicio
+    cargarGaleria();
+
+    // Cargar testimonios al inicio
+    cargarTestimonios();
+
+    // Event Listeners para el modal
+    // Cerrar con el botón X
+    const closeButton = document.querySelector('.close');
+    if (closeButton) {
+        closeButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeModal();
+        });
+    }
+
+    // Cerrar cuando se hace clic fuera del modal
+    const modal = document.getElementById('programModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Cerrar con la tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+});
 
 </script>
-
-<!-- Script para inicializar Swiper -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     new Swiper('.testimonials-slider', {
