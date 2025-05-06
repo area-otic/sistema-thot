@@ -45,6 +45,10 @@ include 'includes/db.php'; ?>
     <script src="assets/pages-front/helpers.js"></script>
     <script src="assets/pages-front/template-customizer.js"></script>
     <script src="assets/pages-front/front-config.js"></script>
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui/material-ui.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     
   </head>
 
@@ -63,7 +67,7 @@ include 'includes/db.php'; ?>
           <i class="icon-base bx bx-menu icon-lg align-middle text-heading fw-medium"></i>
         </button>
 
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="landing-nav.php">
         <i class="icon-base-xl bx bx-graduation"></i>
         Thoth<span style="color: #E74C3C">Education</span></a>
         <a href="landing-page.html" class="app-brand-link"></a>
@@ -76,7 +80,7 @@ include 'includes/db.php'; ?>
         </button>
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
-            <a class="nav-link fw-medium" aria-current="page" href="landing-page.html#landingHero">Inicio</a>
+            <a class="nav-link fw-medium" aria-current="page" href="landing-nav.php">Inicio</a>
           </li>
           <li class="nav-item mega-dropdown">
             <a href="javascript:void(0);" class="nav-link dropdown-toggle navbar-ex-14-mega-dropdown mega-dropdown fw-medium" aria-expanded="false" data-bs-toggle="mega-dropdown" data-trigger="hover">
@@ -214,7 +218,8 @@ include 'includes/db.php'; ?>
           <div class="help-center-header">
             <h4 class="text-center text-primary">Hola, qué programa buscas</h4>
             <div class="input-wrapper mb-4 input-group input-group-merge position-relative mx-auto">
-              <span class="input-group-text" id="basic-addon1"><i class="icon-base bx bx-search"></i></span>
+              <span class="input-group-text" id="basic-addon1">
+                <i class="icon-base bx bx-search"></i></span>
               <input type="text" class="form-control" id="search-name" placeholder="Buscar" aria-label="Buscar" aria-describedby="basic-addon1" />
             </div>
             <!-- Filtros añadidos aquí -->
@@ -313,93 +318,93 @@ include 'includes/db.php'; ?>
     </section>
     <!-- Hero: End -->
 
-    <!-- Useful features: Start -->
-    <section id="landingFeatures" class="section-py landing-features">
-      <div class="container">
-        <div class="text-center mb-2">
-          <span class="badge bg-label-primary">Programas Educativos</span>
-        </div>
-        <h4 class="text-center mb-1">
-          Encuentra el programa perfecto para tu desarrollo profesional
-        </h4>
-        <br>
-        <br>
+     <!-- Programs Section -->
+    <section class="section-py landing-features" id="landingFeatures">
+        <div class="container">
+            <div class="text-center mb-2">
+              <span class="badge bg-label-primary">Programas Educativos</span>
+            </div>
+            <h4 class="text-center mb-1">
+              Encuentra el programa perfecto para tu desarrollo profesional
+            </h4>
+            <br>
+            <br>
 
-        <div id="programsGrid" class="row g-6">
-          <?php
-          $stmt = $conn->query("SELECT * FROM data_maestrias WHERE estado_programa = 'Publicado' LIMIT 8");
-          while ($programa = $stmt->fetch(PDO::FETCH_ASSOC)) {
-              echo '
-              <div class="col-12 col-lg-4 col-xl-3" data-aos="fade-up">
-                  <div class="card h-100 shadow border">
-                      <div class="rounded-2 text-center mb-4 position-relative" style="height: 220px;">
-                          <img class="img-fluid-program w-100 h-100 rounded-top" src="'.htmlspecialchars($programa['imagen_url'] ?? 'https://via.placeholder.com/400x250').'" alt="'.htmlspecialchars($programa['titulo']).'">
-                          <div class="position-absolute bottom-0 start-0 w-100 h-50" style="background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%); pointer-events: none;"></div>
-                      </div>
-                      <div class="card-body p-5 pt-2 d-flex flex-column">
-                          <div class="flex-grow-1"> <!-- Contenedor principal que crece -->
-                              <div class="d-flex justify-content-between align-items-center mb-4 pe-xl-4 pe-xxl-0">
-                                  <span class="badge bg-label-info">'.htmlspecialchars($programa['tipo']).'</span>
-                              </div>
-                              <a class="h5" style="line-height:1.25rem" href="#"><strong>'.htmlspecialchars($programa['titulo']).'</strong></a>
-                              <p class="mt-1" style="color:#95A5A6">'.htmlspecialchars(substr($programa['descripcion'] ?? 'Programa académico de excelencia', 0, 100)).'...</p>
-
-                          </div>                          
-                          <!-- Botón Ver Detalles -->
-                          <div class="pt-2">
-                          <!-- Contenedor de ubicación e institución -->
-                              <div class="mt-auto"> 
-                                  <div class="row g-3 justify-content-center mb-3">
-                                      <div class="col-6 d-flex">
-                                          <div class="d-flex align-items-center">
-                                              <div class="avatar flex-shrink-0 me-3">
-                                                  <span class="avatar-initial rounded bg-label-info">
-                                                      <i class="icon-base bx bx-location-map icon-lg"></i>
-                                                  </span>
-                                              </div>
-                                              <div>
-                                                  <h6 class="mb-0 text-nowrap">'.htmlspecialchars($programa['pais'] ?? 'Online').'</h6>
-                                                  <small>Ubicación</small>
-                                              </div>
-                                          </div>
-                                      </div>
-                                      <div class="col-6 d-flex">
-                                          <div class="d-flex align-items-center">
-                                              <div class="avatar flex-shrink-0 me-3">
-                                                  <span class="avatar-initial rounded bg-label-info">
-                                                      <i class="icon-base bx bx-building icon-lg"></i>
-                                                  </span>
-                                              </div>
-                                              <div>
-                                                  <h6 class="mb-0">'.htmlspecialchars($programa['universidad'] ?? 'Universidad').'</h6>
-                                                  <small>Institución</small>
-                                              </div>
-                                          </div>
-                                      </div>
+            <div id="programsGrid3" class="row g-6">
+                <?php
+                // Obtener programas de la base de datos
+                $stmt = $conn->query("SELECT * FROM data_maestrias WHERE estado_programa = 'Publicado' LIMIT 8");
+                while ($programa = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    echo '
+                    <div class="col-12 col-lg-4 col-xl-3" data-aos="fade-up">
+                      <div class="card h-100 shadow border">
+                          <div class="rounded-2 text-center mb-4 position-relative" style="height: 220px;">
+                              <img class="img-fluid-program w-100 h-100 rounded-top" src="'.htmlspecialchars($programa['imagen_url'] ?? 'https://via.placeholder.com/400x250').'" alt="'.htmlspecialchars($programa['titulo']).'">
+                              <div class="position-absolute bottom-0 start-0 w-100 h-50" style="background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%); pointer-events: none;"></div>
+                          </div>
+                          <div class="card-body p-5 pt-2 d-flex flex-column">
+                              <div class="flex-grow-1"> <!-- Contenedor principal que crece -->
+                                  <div class="d-flex justify-content-between align-items-center mb-4 pe-xl-4 pe-xxl-0">
+                                      <span class="badge bg-label-info">'.htmlspecialchars($programa['tipo']).'</span>
                                   </div>
-                              </div>    
-                          <button class="w-100 btn btn-label-primary d-flex align-items-center" onclick=\'openModal('.json_encode($programa).')\'>
-                                  <span class="me-2">Ver detalles</span>
-                                  <i class="icon-base bx bx-chevron-right icon-sm lh-1"></i>
-                              </button>
+                                  <a class="h5" style="line-height:1.25rem" href="#"><strong>'.htmlspecialchars($programa['titulo']).'</strong></a>
+                                  <p class="mt-1" style="color:#95A5A6">'.htmlspecialchars(substr($programa['descripcion'] ?? 'Programa académico de excelencia', 0, 100)).'...</p>
+
+                              </div>                          
+                              <!-- Botón Ver Detalles -->
+                              <div class="pt-2">
+                              <!-- Contenedor de ubicación e institución -->
+                                  <div class="mt-auto"> 
+                                      <div class="row g-3 justify-content-center mb-3">
+                                          <div class="col-6 d-flex">
+                                              <div class="d-flex align-items-center">
+                                                  <div class="avatar flex-shrink-0 me-3">
+                                                      <span class="avatar-initial rounded bg-label-info">
+                                                          <i class="icon-base bx bx-location-map icon-lg"></i>
+                                                      </span>
+                                                  </div>
+                                                  <div>
+                                                      <h6 class="mb-0 text-nowrap">'.htmlspecialchars($programa['pais'] ?? 'Online').'</h6>
+                                                      <small>Ubicación</small>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                          <div class="col-6 d-flex">
+                                              <div class="d-flex align-items-center">
+                                                  <div class="avatar flex-shrink-0 me-3">
+                                                      <span class="avatar-initial rounded bg-label-info">
+                                                          <i class="icon-base bx bx-building icon-lg"></i>
+                                                      </span>
+                                                  </div>
+                                                  <div>
+                                                      <h6 class="mb-0">'.htmlspecialchars($programa['universidad'] ?? 'Universidad').'</h6>
+                                                      <small>Institución</small>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>    
+                                <a href="landing.php?id='.$programa['id'].'" class="w-100 btn btn-label-primary d-flex align-items-center">
+                                    <span class="me-2">Ver detalles</span>
+                                    <i class="icon-base bx bx-chevron-right icon-sm lh-1"></i>
+                                </a>
+                              </div>
                           </div>
                       </div>
-                  </div>
-              </div>';
-          }
-          ?>
-        </div>
+                  </div>';
+                }
+                ?>
+            </div>
 
-        <div class="load-more-container text-center mt-4">
-                <button id="loadMoreBtn" class="btn btn-info" onclick="cargarMasProgramas()">
+            <div class="load-more-container text-center mt-4">
+                <button id="loadMoreBtn3" class="btn btn-primary" onclick="cargarMasProgramas3()">
                     <span>Ver más programas</span>
                     <i class="fas fa-chevron-down"></i>
                 </button>
+            </div>
+            
         </div>
-
-      </div>
     </section>
-    <!-- Useful features: End -->
 
     <!-- Real customers reviews: Start -->
     <section id="landingReviews" class="section-py bg-body landing-reviews pb-0">
@@ -583,7 +588,6 @@ include 'includes/db.php'; ?>
       </div>
     </section>
 
-
     <!-- Fun facts: Start -->
     <section id="landingFunFacts" class="section-py landing-fun-facts">
       <div class="container">
@@ -766,68 +770,52 @@ include 'includes/db.php'; ?>
 <!-- / Sections:End -->
 
 <!-- Footer: Start -->
-<footer class="landing-footer bg-body footer-text" style="background-color: #241d31;">
+<footer class="landing-footer footer-text">
   <div class="footer-top position-relative overflow-hidden z-1">
     <div class="container">
       <div class="row gx-0 gy-6 g-lg-10">
         <div class="col-lg-5">
-          <a href="landing-page.html" class="app-brand-link mb-6">
-            <span class="app-brand-logo demo"> </span>
-            <span class="app-brand-text demo text-white fw-bold ms-2 ps-1">Sneat</span>
-          </a>
-          <p class="footer-text footer-logo-description mb-6">Most developer friendly & highly customisable Admin Dashboard Template.</p>
-          <form class="footer-form">
+          <a class="navbar-brand" href="#">
+          <i class="icon-base-xl bx bx-graduation"></i>
+          Thoth<span style="color: #E74C3C">Education</span></a>
+          <a href="landing-page.html" class="app-brand-link"></a>
+          <p class="footer-text footer-logo-description mb-6">
+            Conectando estudiantes con las mejores oportunidades educativas en todo el mundo.</p>
+          <!--<form class="footer-form">
             <label for="footer-email" class="small">Subscribe to newsletter</label>
             <div class="d-flex mt-1">
               <input type="email" class="form-control rounded-0 rounded-start-bottom rounded-start-top" id="footer-email" placeholder="Your email" />
               <button type="submit" class="btn btn-primary shadow-none rounded-0 rounded-end-bottom rounded-end-top">Subscribe</button>
             </div>
-          </form>
+          </form>-->
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6">
-          <h6 class="footer-title mb-6">Demos</h6>
+          <h6 class="footer-title mb-6">Enlaces Rápidos</h6>
           <ul class="list-unstyled">
             <li class="mb-4">
-              <a href="../vertical-menu-template/" target="_blank" class="footer-link">Vertical Layout</a>
+              <a href="#" target="_blank" class="footer-link">Inicio</a>
             </li>
             <li class="mb-4">
-              <a href="../horizontal-menu-template/" target="_blank" class="footer-link">Horizontal Layout</a>
-            </li>
-            <li class="mb-4">
-              <a href="../vertical-menu-template-bordered/" target="_blank" class="footer-link">Bordered Layout</a>
-            </li>
-            <li class="mb-4">
-              <a href="../vertical-menu-template-semi-dark/" target="_blank" class="footer-link">Semi Dark Layout</a>
+              <a href="#" target="_blank" class="footer-link">Programas</a>
             </li>
             <li>
-              <a href="../vertical-menu-template-dark/" target="_blank" class="footer-link">Dark Layout</a>
+              <a href="#" target="_blank" class="footer-link">Contacto</a>
             </li>
           </ul>
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6">
-          <h6 class="footer-title mb-6">Pages</h6>
+          <!--<h6 class="footer-title mb-6">Pages</h6>
           <ul class="list-unstyled">
             <li class="mb-4">
               <a href="pricing-page.html" class="footer-link">Pricing</a>
             </li>
             <li class="mb-4">
-              <a href="payment-page.html" class="footer-link">Payment<span class="badge bg-primary ms-2">New</span></a>
-            </li>
-            <li class="mb-4">
-              <a href="checkout-page.html" class="footer-link">Checkout</a>
-            </li>
-            <li class="mb-4">
               <a href="help-center-landing.html" class="footer-link">Help Center</a>
             </li>
-            <!--<li>
+            <li>
               <a href="../vertical-menu-template/auth-login-cover.html" target="_blank" class="footer-link">Login/Register</a>
             </li>-->
           </ul>
-        </div>
-        <div class="col-lg-3 col-md-4">
-          <h6 class="footer-title mb-6">Download our app</h6>
-          <a href="javascript:void(0);" class="d-block mb-4"><img src="../../assets/img/front-pages/landing-page/apple-icon.png" alt="apple icon" /></a>
-          <a href="javascript:void(0);" class="d-block"><img src="../../assets/img/front-pages/landing-page/google-play-icon.png" alt="google play icon" /></a>
         </div>
       </div>
     </div>
@@ -845,7 +833,7 @@ include 'includes/db.php'; ?>
         <span class="footer-bottom-text">  Desarrollado por SSB.</span>
       </div>
       <div>        
-        <a href="https://www.facebook.com/ThemeSelections/" class="me-4 text-white" target="_blank">
+        <!--<a href="https://www.facebook.com/ThemeSelections/" class="me-4 text-white" target="_blank">
           <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M11.8609 18.0262V11.1962H14.1651L14.5076 8.52204H11.8609V6.81871C11.8609 6.04704 12.0759 5.51871 13.1834 5.51871H14.5868V3.13454C13.904 3.06136 13.2176 3.02603 12.5309 3.02871C10.4943 3.02871 9.09593 4.27204 9.09593 6.55454V8.51704H6.80676V11.1912H9.10093V18.0262H11.8609Z" fill="currentColor" />
           </svg>
@@ -871,7 +859,7 @@ include 'includes/db.php'; ?>
               </clipPath>
             </defs>
           </svg>
-        </a>
+        </a>-->
       </div>
     </div>
   </div>
@@ -881,21 +869,17 @@ include 'includes/db.php'; ?>
     <script src="assets/pages-front/popper.js"></script>
     <script src="assets/pages-front/bootstrap.js"></script>
     <script src="assets/pages-front/autocomplete-js.js"></script>
-
     <script src="assets/pages-front/pickr.js"></script>
     
-
-    
-    <!-- endbuild -->
-
-    <!-- Vendors JS -->
     <script src="assets/pages-front/nouislider.js"></script>
     <script src="assets/pages-front/swiper.js"></script>
 
     <!-- Main JS -->
     
-      <script src="assets/pages-front/front-main.js"></script>
+    <script src="assets/pages-front/front-main.js"></script>
     
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Page JS -->
     <script src="assets/pages-front/front-page-landing.js"></script>
@@ -930,60 +914,6 @@ include 'includes/db.php'; ?>
       }
     }
 
-    // Function to open modal with program details
-    function openModal(programa) {
-        // Set basic info
-        document.getElementById('modalImage').src = programa.imagen_url || 'https://via.placeholder.com/1200x400';
-        document.getElementById('modalTitle').textContent = programa.titulo;
-        document.getElementById('modalTipo').textContent = programa.tipo;
-        document.getElementById('modalCategoria').textContent = programa.categoria;
-        
-        // Set description with line breaks
-        document.getElementById('modalDescription').innerHTML = 
-            (programa.descripcion || 'Información no disponible').replace(/\n/g, '<br>');
-        
-        // Set details
-        document.getElementById('modalUniversidad').textContent = programa.universidad || 'No especificada';
-        document.getElementById('modalDuracion').textContent = programa.duracion || 'No especificada';
-        document.getElementById('modalPais').textContent = programa.pais || 'No especificado';
-        document.getElementById('modalModalidad').textContent = programa.modalidad || 'No especificada';
-        
-        // Set objectives with line breaks
-        document.getElementById('modalObjetivos').innerHTML = 
-            (programa.objetivos || 'Información no disponible').replace(/\n/g, '<br>');
-        
-        // Set study plan with line breaks
-        document.getElementById('modalPlanEstudios').innerHTML = 
-            (programa.plan_estudios || 'Información no disponible').replace(/\n/g, '<br>');
-        
-        // Set URL button
-        const urlBtn = document.getElementById('modalUrl');
-        if (programa.url) {
-            urlBtn.href = programa.url;
-            urlBtn.style.display = 'flex';
-        } else {
-            urlBtn.style.display = 'none';
-        }
-
-        // Show modal
-        const modal = document.getElementById('programModal');
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        
-        // Initialize Bootstrap accordion (if not already initialized)
-        if (typeof bootstrap !== 'undefined') {
-            new bootstrap.Collapse(document.getElementById('collapseDescription'), { toggle: false });
-            new bootstrap.Collapse(document.getElementById('collapseObjetivos'), { toggle: false });
-            new bootstrap.Collapse(document.getElementById('collapsePlan'), { toggle: false });
-        }
-    }
-
-    // Función para cerrar el modal
-    function closeModal() {
-        const modal = document.getElementById('programModal');
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
 
     // Función para buscar programas con los filtros aplicados
     function buscarProgramas() {
@@ -1029,7 +959,7 @@ include 'includes/db.php'; ?>
             const totalResultados = data.total || 0;
 
             // Limpiar el grid actual
-            const programsGrid = document.getElementById('programsGrid');
+            const programsGrid = document.getElementById('programsGrid3');
             programsGrid.innerHTML = '';
             
             // Mostrar los resultados
@@ -1042,7 +972,7 @@ include 'includes/db.php'; ?>
                     </div>
                 `;
             } else {
-                mostrarProgramas(programas);
+                mostrarProgramas3(programas);
             }
 
             // Mostrar SweetAlert con el número de resultados
@@ -1079,7 +1009,7 @@ include 'includes/db.php'; ?>
             currentPage = 1;
             
             // Mostrar u ocultar botón "Ver más" según resultados
-            document.getElementById('loadMoreBtn').style.display = totalResultados > 8 ? 'block' : 'none';
+            document.getElementById('loadMoreBtn3').style.visibility = totalResultados > 8 ? 'visible' : 'hidden';
         })
         .catch(error => {
             Swal.close();
@@ -1089,7 +1019,7 @@ include 'includes/db.php'; ?>
     }
 
     // Función para cargar más programas via AJAX
-    function cargarMasProgramas() {
+    function cargarMasProgramas3() {
         currentPage++;
         
         // Obtener valores de los filtros (si hay alguno aplicado)
@@ -1101,12 +1031,12 @@ include 'includes/db.php'; ?>
         const universidad = document.getElementById('filter-universidad').value;
 
         // Mostrar loader en el botón
-        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        const loadMoreBtn = document.getElementById('loadMoreBtn3');
         loadMoreBtn.innerHTML = '<span>Cargando...</span> <i class="fas fa-spinner fa-spin"></i>';
         loadMoreBtn.disabled = true;
 
         // Realizar la petición AJAX
-        fetch('/control/cargar_masprogramas.php', {
+        fetch('control/cargar_masprogramas.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -1135,7 +1065,7 @@ include 'includes/db.php'; ?>
                     showConfirmButton: false
                 });
             } else {
-                mostrarProgramas(data);
+                mostrarProgramas3(data);
             }
         })
         .catch(error => {
@@ -1149,33 +1079,69 @@ include 'includes/db.php'; ?>
     }
 
     // Función para mostrar programas en el grid
-    function mostrarProgramas(programas) {
-        const contenedor = document.getElementById('programsGrid');
+    function mostrarProgramas3(programas) {
+        const contenedor = document.getElementById('programsGrid3');
         
         programas.forEach(programa => {
             const card = `
-                <div class="program-card" data-aos="fade-up">
-                    <img src="${programa.imagen_url || 'https://via.placeholder.com/400x250'}"
-                        alt="${programa.titulo}" class="program-image">
-                    <div class="program-content">
-                        <h3 class="program-title">${programa.titulo}</h3>
-                        <p class="program-description">${programa.descripcion || 'Sin descripción disponible'}</p>
-                        <div class="program-details">
-                            <span class="program-detail">
-                                <i class="fas fa-graduation-cap"></i>
-                                ${programa.tipo}
-                            </span>
-                            <span class="program-detail">
-                                <i class="fas fa-university"></i>
-                                ${programa.universidad}
-                            </span>
-                        </div>
-                        <button class="program-button" onclick='openModal(${JSON.stringify(programa)})'>
-                            <span>Ver detalles</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
+                <div class="col-12 col-lg-4 col-xl-3" data-aos="fade-up">
+                      <div class="card h-100 shadow border">
+                          <div class="rounded-2 text-center mb-4 position-relative" style="height: 220px;">
+                              <img class="img-fluid-program w-100 h-100 rounded-top"
+                                src="${programa.imagen_url || 'https://via.placeholder.com/400x250'}" 
+                                alt="${programa.titulo}">
+                              <div class="position-absolute bottom-0 start-0 w-100 h-50" style="background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%); pointer-events: none;"></div>
+                          </div>
+                          <div class="card-body p-5 pt-2 d-flex flex-column">
+                              <div class="flex-grow-1"> <!-- Contenedor principal que crece -->
+                                  <div class="d-flex justify-content-between align-items-center mb-4 pe-xl-4 pe-xxl-0">
+                                      <span class="badge bg-label-info">${programa.tipo || 'Maestría'}</span>
+                                  </div>
+                                  <a class="h5" style="line-height:1.25rem" href="#"><strong>${programa.titulo}</strong></a>
+                                  <p class="mt-1" style="color:#95A5A6">${(programa.descripcion || 'Programa académico de excelencia').substring(0, 100)}...</p>
+
+                              </div>                          
+                              <!-- Botón Ver Detalles -->
+                              <div class="pt-2">
+                              <!-- Contenedor de ubicación e institución -->
+                                  <div class="mt-auto"> 
+                                      <div class="row g-3 justify-content-center mb-3">
+                                          <div class="col-6 d-flex">
+                                              <div class="d-flex align-items-center">
+                                                  <div class="avatar flex-shrink-0 me-3">
+                                                      <span class="avatar-initial rounded bg-label-info">
+                                                          <i class="icon-base bx bx-location-map icon-lg"></i>
+                                                      </span>
+                                                  </div>
+                                                  <div>
+                                                      <h6 class="mb-0 text-nowrap">${programa.pais || 'Online'}</h6>
+                                                      <small>Ubicación</small>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                          <div class="col-6 d-flex">
+                                              <div class="d-flex align-items-center">
+                                                  <div class="avatar flex-shrink-0 me-3">
+                                                      <span class="avatar-initial rounded bg-label-info">
+                                                          <i class="icon-base bx bx-building icon-lg"></i>
+                                                      </span>
+                                                  </div>
+                                                  <div>
+                                                      <h6 class="mb-0">${programa.universidad || 'Universidad'}</h6>
+                                                      <small>Institución</small>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>    
+                              <button class="w-100 btn btn-label-primary d-flex align-items-center" onclick="">
+                                      <span class="me-2">Ver detalles</span>
+                                      <i class="icon-base bx bx-chevron-right icon-sm lh-1"></i>
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
             `;
             contenedor.insertAdjacentHTML('beforeend', card);
         });
@@ -1383,7 +1349,8 @@ include 'includes/db.php'; ?>
         });
     });
     </script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+
   </body>
 </html>
 

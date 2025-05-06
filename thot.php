@@ -451,6 +451,72 @@ function toggleMoreFilters() {
     }
 }
 
+function mostrarProgramas(programas) {
+        const contenedor = document.getElementById('programsGrid');
+        contenedor.innerHTML = ''; // Limpiar el contenedor antes de agregar nuevos elementos
+        
+        programas.forEach(programa => {
+            const card = `
+                <div class="col-12 col-lg-4 col-xl-3" data-aos="fade-up">
+                    <div class="card h-100 shadow border">
+                        <div class="rounded-2 text-center mb-4 position-relative" style="height: 220px;">
+                            <img class="img-fluid-program w-100 h-100 rounded-top" 
+                                src="${programa.imagen_url || 'https://via.placeholder.com/400x250'}" 
+                                alt="${programa.titulo}">
+                            <div class="position-absolute bottom-0 start-0 w-100 h-50" style="background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%); pointer-events: none;"></div>
+                        </div>
+                        <div class="card-body p-5 pt-2 d-flex flex-column">
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-4 pe-xl-4 pe-xxl-0">
+                                    <span class="badge bg-label-info">${programa.tipo || 'Maestría'}</span>
+                                </div>
+                                <a class="h5" style="line-height:1.25rem" href="#"><strong>${programa.titulo}</strong></a>
+                                <p class="mt-1" style="color:#95A5A6">${(programa.descripcion || 'Programa académico de excelencia').substring(0, 100)}...</p>
+                            </div>                          
+                            <div class="pt-2">
+                                <div class="mt-auto"> 
+                                    <div class="row g-3 justify-content-center mb-3">
+                                        <div class="col-6 d-flex">
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar flex-shrink-0 me-3">
+                                                    <span class="avatar-initial rounded bg-label-info">
+                                                        <i class="icon-base bx bx-location-map icon-lg"></i>
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0 text-nowrap">${programa.pais || 'Online'}</h6>
+                                                    <small>Ubicación</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 d-flex">
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar flex-shrink-0 me-3">
+                                                    <span class="avatar-initial rounded bg-label-info">
+                                                        <i class="icon-base bx bx-building icon-lg"></i>
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">${programa.universidad || 'Universidad'}</h6>
+                                                    <small>Institución</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>    
+                                <button class="w-100 btn btn-label-primary d-flex align-items-center" >
+                                    <span class="me-2">Ver detalles</span>
+                                    <i class="icon-base bx bx-chevron-right icon-sm lh-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            contenedor.insertAdjacentHTML('beforeend', card);
+        });
+    }
+    
 // Function to open modal with program details
 function openModal(programa) {
     // Set basic info
@@ -702,123 +768,123 @@ function mostrarProgramas(programas) {
     });
 }
 
-// Función para cargar la galería de universidades
-function cargarGaleria() {
-    // Mostrar loader mientras carga
-    const galleryGrid = document.getElementById('galleryGrid');
-    galleryGrid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Cargando universidades...</div>';
+    // Función para cargar la galería de universidades
+    function cargarGaleria() {
+        // Mostrar loader mientras carga
+        const galleryGrid = document.getElementById('galleryGrid');
+        galleryGrid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Cargando universidades...</div>';
 
-    fetch('control/galeria_universidad_handler.php')
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                throw new Error(data.message || 'Error al cargar datos');
-            }
-
-            galleryGrid.innerHTML = '';
-
-            if (data.universidades && data.universidades.length > 0) {
-                data.universidades.forEach(universidad => {
-                    const imageUrl = universidad.imagen_url || 'img/default-university.jpg';
-                    const galleryItem = document.createElement('div');
-                    galleryItem.className = 'gallery-item';
-                    galleryItem.setAttribute('data-aos', 'fade-up');
-                    
-                    galleryItem.innerHTML = `
-                        <a href="${imageUrl}"
-                           data-fancybox="gallery"
-                           data-caption="${universidad.nombreuniversidad}"
-                           data-thumb="${imageUrl}">
-                            <img src="${imageUrl}" 
-                                 alt="${universidad.nombreuniversidad}" 
-                                 class="gallery-image">
-                            <div class="gallery-overlay">
-                                <h3 class="gallery-title">${universidad.nombreuniversidad}</h3>
-                                <p class="gallery-description">${universidad.descripcion || universidad.pais || 'Convenio activo'}</p>
-                            </div>
-                        </a>
-                    `;
-                    galleryGrid.appendChild(galleryItem);
-                });
-
-                // Inicializar Fancybox si está disponible
-                if (typeof Fancybox !== 'undefined') {
-                    Fancybox.bind("[data-fancybox]", {
-                        // Opciones de Fancybox
-                    });
+        fetch('control/galeria_universidad_handler.php')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Error al cargar datos');
                 }
-            } else {
-                galleryGrid.innerHTML = '<p class="no-results">No se encontraron universidades con convenio activo.</p>';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            galleryGrid.innerHTML = '<p class="error-message">Error al cargar la galería de universidades.</p>';
-        });
-}
 
-// Función para inicializar Swiper
-function initTestimonialsSwiper() {
-    new Swiper('.testimonials-slider', {
-        loop: true,
-        autoplay: {
-            delay: 5000,
-            disableOnInteraction: false
-        },
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true
-        },
-        slidesPerView: 1,
-        spaceBetween: 20,
-        breakpoints: {
-            768: {
-                slidesPerView: 2
+                galleryGrid.innerHTML = '';
+
+                if (data.universidades && data.universidades.length > 0) {
+                    data.universidades.forEach(universidad => {
+                        const imageUrl = universidad.imagen_url || 'img/default-university.jpg';
+                        const galleryItem = document.createElement('div');
+                        galleryItem.className = 'gallery-item';
+                        galleryItem.setAttribute('data-aos', 'fade-up');
+                        
+                        galleryItem.innerHTML = `
+                            <a href="${imageUrl}"
+                            data-fancybox="gallery"
+                            data-caption="${universidad.nombreuniversidad}"
+                            data-thumb="${imageUrl}">
+                                <img src="${imageUrl}" 
+                                    alt="${universidad.nombreuniversidad}" 
+                                    class="gallery-image">
+                                <div class="gallery-overlay">
+                                    <h3 class="gallery-title">${universidad.nombreuniversidad}</h3>
+                                    <p class="gallery-description">${universidad.descripcion || universidad.pais || 'Convenio activo'}</p>
+                                </div>
+                            </a>
+                        `;
+                        galleryGrid.appendChild(galleryItem);
+                    });
+
+                    // Inicializar Fancybox si está disponible
+                    if (typeof Fancybox !== 'undefined') {
+                        Fancybox.bind("[data-fancybox]", {
+                            // Opciones de Fancybox
+                        });
+                    }
+                } else {
+                    galleryGrid.innerHTML = '<p class="no-results">No se encontraron universidades con convenio activo.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                galleryGrid.innerHTML = '<p class="error-message">Error al cargar la galería de universidades.</p>';
+            });
+    }
+
+    // Función para inicializar Swiper
+    function initTestimonialsSwiper() {
+        new Swiper('.testimonials-slider', {
+            loop: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false
             },
-            1024: {
-                slidesPerView: 3
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true
+            },
+            slidesPerView: 1,
+            spaceBetween: 20,
+            breakpoints: {
+                768: {
+                    slidesPerView: 2
+                },
+                1024: {
+                    slidesPerView: 3
+                }
             }
-        }
-    });
-}
-
-
-// Event Listeners para el modal
-document.addEventListener('DOMContentLoaded', function() {
-
-    // Cargar la galería al inicio
-    cargarGaleria();
-
-    // Cargar testimonios al inicio
-    cargarTestimonios();
-
-    // Event Listeners para el modal
-    // Cerrar con el botón X
-    const closeButton = document.querySelector('.close');
-    if (closeButton) {
-        closeButton.addEventListener('click', function(e) {
-            e.stopPropagation();
-            closeModal();
         });
     }
 
-    // Cerrar cuando se hace clic fuera del modal
-    const modal = document.getElementById('programModal');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
+
+    // Event Listeners para el modal
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Cargar la galería al inicio
+        cargarGaleria();
+
+        // Cargar testimonios al inicio
+        cargarTestimonios();
+
+        // Event Listeners para el modal
+        // Cerrar con el botón X
+        const closeButton = document.querySelector('.close');
+        if (closeButton) {
+            closeButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeModal();
+            });
+        }
+
+        // Cerrar cuando se hace clic fuera del modal
+        const modal = document.getElementById('programModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+
+        // Cerrar con la tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
                 closeModal();
             }
         });
-    }
-
-    // Cerrar con la tecla ESC
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
     });
-});
 
 </script>
 <script>
