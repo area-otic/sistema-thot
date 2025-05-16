@@ -48,12 +48,13 @@ include '../includes/header.php';
                 </div>
             </div>
     </div>-->
+
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Lista de Maestrías</h5> <!-- Título a la izquierda -->
             <div>
               <a class="btn btn-secondary" href='importar_maestrias.php'>Importar</a>
-              <a class="btn btn-primary" href='registrar_maestria.php'>Registrar Maestría</a>  
+              <a class="btn btn-primary" href='registrar_maestria2.php'>Registrar Maestría</a>  
           </div>
         </div>
         <div class="table-responsive text-nowrap" style="margin: 20px;">
@@ -103,7 +104,7 @@ include '../includes/header.php';
                                     >
                                         <i class='bx bx-show'></i>
                                     </button>
-                                        <a href='registrar_maestria.php?id={$row['id']}' class='btn btn-info btn-sm'><i class='bx bx-edit'></i>
+                                        <a href='registrar_maestria2.php?id={$row['id']}' class='btn btn-info btn-sm'><i class='bx bx-edit'></i>
                                     </a>
                                         <a href='../control/pr_eliminar_maestria.php?id={$row['id']}' class='btn btn-danger btn-sm'><i class='bx bx-trash'></i>
                                     </a>
@@ -202,94 +203,95 @@ include '../includes/header.php';
     </div>
 
 </div>
-   <!-- jQuery -->
-   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 <script>
-        $(document).ready(function() {
-            $('#tabla-maestrias').DataTable({
-                language: {
-                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' // Español
-                },
-                scrollX: false,
-                responsive: true, // Hace que la tabla sea responsive
-                ordering: true, // Permite ordenar las columnas
-                searching: true, // Habilita la búsqueda
-                paging: true, // Habilita la paginación
-                lengthMenu: [15, 20, 30, 50], // Opciones de cantidad de registros por página
-                order: [[0, 'desc']], // Orden inicial: columna 0 (ID) descendente
-                columnDefs: [
-                    { orderable: true, targets: [0] }, // ID ordenable
-                    { orderable: true, targets: [1] }, // Título ordenable
-                    { orderable: true, targets: [2] }, // Universidad ordenable
-                    { orderable: true, targets: [3] }, // Tipo ordenable
-                    { orderable: true, targets: [5] },  // Categoría ordenable
-                    { orderable: true, targets: [4] }  // Categoría ordenable
-                ]
+    $(document).ready(function() {
+        $('#tabla-maestrias').DataTable({
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' // Español
+            },
+            scrollX: false,
+            responsive: true, // Hace que la tabla sea responsive
+            ordering: true, // Permite ordenar las columnas
+            searching: true, // Habilita la búsqueda
+            paging: true, // Habilita la paginación
+            lengthMenu: [15, 20, 30, 50], // Opciones de cantidad de registros por página
+            order: [[0, 'desc']], // Orden inicial: columna 0 (ID) descendente
+            columnDefs: [
+                { orderable: true, targets: [0] }, // ID ordenable
+                { orderable: true, targets: [1] }, // Título ordenable
+                { orderable: true, targets: [2] }, // Universidad ordenable
+                { orderable: true, targets: [3] }, // Tipo ordenable
+                { orderable: true, targets: [5] },  // Categoría ordenable
+                { orderable: true, targets: [4] }  // Categoría ordenable
+            ]
+        });
+    });
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".btn-ver").forEach(button => {
+            button.addEventListener("click", function () {
+                document.getElementById("id").value = this.dataset.id;
+                document.getElementById("titulo").value = this.dataset.titulo;
+                document.getElementById("descripcion").value = this.dataset.descripcion;
+                document.getElementById("tipo").value = this.dataset.tipo;
+                document.getElementById("categoria").value = this.dataset.categoria;
+                document.getElementById("universidad").value = this.dataset.universidad;
+                document.getElementById("pais").value = this.dataset.pais;
+                document.getElementById("modalidad").value = this.dataset.modalidad;
+                document.getElementById("duracion").value = this.dataset.duracion;
+                document.getElementById("imagen_url").value = this.dataset.imagen;
+                document.getElementById("objetivos").value = this.dataset.objetivos;
+                document.getElementById("plan_estudios").value = this.dataset.plan;
+                document.getElementById("url").value = this.dataset.url;
             });
         });
+    });
 
-
-        document.addEventListener("DOMContentLoaded", function () {
-          document.querySelectorAll(".btn-ver").forEach(button => {
-              button.addEventListener("click", function () {
-                  document.getElementById("id").value = this.dataset.id;
-                  document.getElementById("titulo").value = this.dataset.titulo;
-                  document.getElementById("descripcion").value = this.dataset.descripcion;
-                  document.getElementById("tipo").value = this.dataset.tipo;
-                  document.getElementById("categoria").value = this.dataset.categoria;
-                  document.getElementById("universidad").value = this.dataset.universidad;
-                  document.getElementById("pais").value = this.dataset.pais;
-                  document.getElementById("modalidad").value = this.dataset.modalidad;
-                  document.getElementById("duracion").value = this.dataset.duracion;
-                  document.getElementById("imagen_url").value = this.dataset.imagen;
-                  document.getElementById("objetivos").value = this.dataset.objetivos;
-                  document.getElementById("plan_estudios").value = this.dataset.plan;
-                  document.getElementById("url").value = this.dataset.url;
-              });
-          });
+    document.addEventListener("DOMContentLoaded", function() {
+        // Configuración de SweetAlert
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: 'btn btn-danger mx-2',
+                cancelButton: 'btn btn-secondary mx-2'
+            },
+            buttonsStyling: false
         });
 
-        document.addEventListener("DOMContentLoaded", function() {
-            // Configuración de SweetAlert
-            const swalWithBootstrapButtons = Swal.mixin({
-                customClass: {
-                    confirmButton: 'btn btn-danger mx-2',
-                    cancelButton: 'btn btn-secondary mx-2'
-                },
-                buttonsStyling: false
-            });
-
-            // Evento para todos los botones de eliminar
-            document.querySelectorAll('.btn-danger').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const deleteUrl = this.getAttribute('href');
-                    const maestriaNombre = this.closest('tr').querySelector('td:nth-child(2)').textContent;
-                    
-                    swalWithBootstrapButtons.fire({
-                        title: '¿Eliminar Maestría?',
-                        html: `¿Estás seguro que deseas eliminar la maestría <b>"${maestriaNombre}"</b>?<br><br>Esta acción no se puede deshacer.`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar',
-                        reverseButtons: true,
-                        focusConfirm: false,
-                        focusCancel: true
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Redirigir a la URL de eliminación si se confirma
-                            window.location.href = deleteUrl;
-                        }
-                    });
+        // Evento para todos los botones de eliminar
+        document.querySelectorAll('.btn-danger').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const deleteUrl = this.getAttribute('href');
+                const maestriaNombre = this.closest('tr').querySelector('td:nth-child(2)').textContent;
+                
+                swalWithBootstrapButtons.fire({
+                    title: '¿Eliminar Maestría?',
+                    html: `¿Estás seguro que deseas eliminar la maestría <b>"${maestriaNombre}"</b>?<br><br>Esta acción no se puede deshacer.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    focusConfirm: false,
+                    focusCancel: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Redirigir a la URL de eliminación si se confirma
+                        window.location.href = deleteUrl;
+                    }
                 });
             });
         });
-  </script>
+    });
+</script>
 <!-- Vendors JS -->
 <script src="../assets/vendor/datatables-bootstrap5.js"></script>
 <!-- Page JS -->

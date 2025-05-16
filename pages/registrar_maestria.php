@@ -366,20 +366,20 @@ include '../includes/header.php';
 
 <script>
         
-        // Validación de formulario
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('formMaestria');
-            
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    if (!form.checkValidity()) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        form.classList.add('was-validated');
-                    }
-                });
-            }
-        });
+    // Validación de formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formMaestria');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    form.classList.add('was-validated');
+                }
+            });
+        }
+    });
   </script>
 
 <?php include '../includes/footer.php'; ?>
