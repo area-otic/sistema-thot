@@ -7,7 +7,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
     
     try {
         // Preparar la consulta SQL para eliminar
-        $stmt = $conn->prepare("DELETE FROM data_maestrias WHERE id = :id");
+        $stmt = $conn->prepare("DELETE FROM data_programas WHERE id = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         
         // Ejecutar la consulta

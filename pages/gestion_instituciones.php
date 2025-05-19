@@ -23,37 +23,12 @@ include '../includes/header.php';
         }
     ?>
     <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Universidades/</span> Registros</h4>
-    <!--<div class="card mb-4">
-        <h5 class="card-header">Filtros de búsqueda</h5>
-            <div class="card-body">
-                <div class="row gx-3 gy-2 align-items-center">
-                    <div class="col-md-3">
-                      <label class="form-label" for="selectTypeOpt">Universidad</label>
-                      <select id="selectTypeOpt" class="form-select color-dropdown">
-                        <option value="bg-primary" selected="">Seleccionar</option>
-                        <option value="bg-secondary">CESUMA</option>
-                      </select>
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label" for="selectPlacement">Tipo</label>
-                      <select class="form-select placement-dropdown" id="selectPlacement">
-                        <option value="top-0 start-0">Maestría</option>
-                        <option value="top-0 start-50 translate-middle-x">Posgrado</option>
-                      </select>
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label" for="showToastPlacement">&nbsp;</label>
-                      <button class="btn btn-primary d-block">Buscar</button>
-                    </div>
-                </div>
-            </div>
-    </div>-->
+    
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Lista de Universidades</h5> <!-- Título a la izquierda -->
             <div>
-              <!--<a class="btn btn-secondary" href='importar_universidad.php'>Importar</a>-->
-              <a class="btn btn-primary" href='registrar_universidad.php'>Registrar Universidad</a>  
+              <a class="btn btn-primary" href='registrar_instituciones.php'>Registrar Institución</a>  
           </div>
         </div>
         <div class="table-responsive " style="margin: 20px;">
@@ -71,14 +46,15 @@ include '../includes/header.php';
                 <tbody>
                     <?php
                     // Consulta a la base de datos - ORDEN DESCENDENTE POR ID
-                    $stmt = $conn->query("SELECT * FROM data_universidades ORDER BY id DESC");
+                    $stmt = $conn->query("SELECT * FROM data_instituciones ORDER BY id DESC");
                     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                         echo "<tr>
                                 <td>{$row['id']}</td>
-                                <td>" . ($row['nombreuniversidad'] ?? 'N/A') . "</td>
+                                <td>" . ($row['nombre'] ?? 'N/A') . "</td>
                                 <td>" . ($row['pais'] ?? 'N/A') . "</td>
-                                <td>" . ($row['convenio'] ?? 'N/A') . "</td>
-                                <td><span class='badge " . ($row['estado'] == 'Publicado' ? 'bg-label-success' : 'bg-label-secondary') . "'>" . ($row['estado'] ?? 'N/A') . "</span></td>
+                                <td><span class='badge " . ($row['convenio'] == 'Si' ? 'bg-label-info' : 'bg-label-secondary') . "'>" . ($row['convenio'] ?? 'N/A') . "</span></td>
+                                
+                                <td><span class='badge " . ($row['estado'] == 'Activo' ? 'bg-label-success' : 'bg-label-secondary') . "'>" . ($row['estado'] ?? 'N/A') . "</span></td>
                                 <td>
                                     <button
                                         type='button'
@@ -86,12 +62,13 @@ include '../includes/header.php';
                                         data-bs-toggle='modal'
                                         data-bs-target='#modalCenter'
                                         data-id='{$row['id']}'
-                                        data-universidad='{$row['nombreuniversidad']}'
+                                        data-universidad='{$row['nombre']}'
                                         data-descripcion='" . ($row['descripcion'] ?? '') . "'
                                         data-imagen='" . ($row['imagen_url'] ?? '') . "'
                                         data-pais='" . ($row['pais'] ?? '') . "'
-                                        data-sitioweb='" . ($row['sitio_web'] ?? '') . "'
-                                        data-tipo='" . ($row['tipo_institucion'] ?? '') . "'
+                                        data-ciudad='" . ($row['ciudad'] ?? '') . "'
+                                        data-sitioweb='" . ($row['url'] ?? '') . "'
+                                        data-tipo='" . ($row['tipo'] ?? '') . "'
                                         data-convenio='" . ($row['convenio'] ?? '') . "'
                                         data-estado='" . ($row['estado'] ?? '') . "'
                                         data-fecha='" . ($row['fecha_modificada'] ?? '') . "'
@@ -99,7 +76,7 @@ include '../includes/header.php';
                                     >
                                         <i class='bx bx-show'></i>
                                     </button>
-                                        <a href='registrar_universidad.php?id={$row['id']}' class='btn btn-info btn-sm'><i class='bx bx-edit'></i>
+                                        <a href='registrar_instituciones.php?id={$row['id']}' class='btn btn-info btn-sm'><i class='bx bx-edit'></i>
                                     </a>
                                         <a href='../control/pr_eliminar_universidad.php?id={$row['id']}' class='btn btn-danger btn-sm'><i class='bx bx-trash'></i>
                                     </a>
@@ -274,8 +251,8 @@ include '../includes/header.php';
                     const maestriaNombre = this.closest('tr').querySelector('td:nth-child(2)').textContent;
                     
                     swalWithBootstrapButtons.fire({
-                        title: '¿Eliminar Maestría?',
-                        html: `¿Estás seguro que deseas eliminar la maestría <b>"${maestriaNombre}"</b>?<br><br>Esta acción no se puede deshacer.`,
+                        title: '¿Eliminar Institución?',
+                        html: `¿Estás seguro que deseas eliminar la institución <b>"${maestriaNombre}"</b>?<br><br>Esta acción no se puede deshacer.`,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Sí, eliminar',

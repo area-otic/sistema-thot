@@ -3,7 +3,7 @@ include '../includes/db.php';
 include '../control/check_session.php';
 
 // Inicializar variables
-$nombreuniversidad = $descripcion = $imagen_url = $pais = $sitio_web = $tipo_institucion = $convenio = $estado = '';
+$nombre = $descripcion = $imagen_url = $pais = $ciudad = $tipo = $convenio = $url = $estado = '';
 $id = null;
 $isEdit = false;
 
@@ -12,31 +12,32 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
     $id = $_GET['id'];
     $isEdit = true;
     
-    // Obtener datos de la universidad
+    // Obtener datos de la institución
     try {
-        $stmt = $conn->prepare("SELECT * FROM data_universidades WHERE id = :id");
+        $stmt = $conn->prepare("SELECT * FROM data_instituciones WHERE id = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
         
         if($stmt->rowCount() > 0) {
-            $universidad = $stmt->fetch(PDO::FETCH_ASSOC);
+            $institucion = $stmt->fetch(PDO::FETCH_ASSOC);
             
             // Asignar valores a las variables
-            $nombreuniversidad = $universidad['nombreuniversidad'];
-            $descripcion = $universidad['descripcion'];
-            $imagen_url = $universidad['imagen_url'];
-            $pais = $universidad['pais'];
-            $sitio_web = $universidad['sitio_web'];
-            $tipo_institucion = $universidad['tipo_institucion'];
-            $convenio = $universidad['convenio'];
-            $estado = $universidad['estado'];
+            $nombre = $institucion['nombre'];
+            $descripcion = $institucion['descripcion'];
+            $imagen_url = $institucion['imagen_url'];
+            $pais = $institucion['pais'];
+            $ciudad = $institucion['ciudad'];
+            $tipo = $institucion['tipo'];
+            $convenio = $institucion['convenio'];
+            $url = $institucion['url'];
+            $estado = $institucion['estado'];
             
         } else {
-            header("Location: gestion_testimonios.php?error=Universidad no encontrada");
+            header("Location: gestion_instituciones.php?error=Institución no encontrada");
             exit();
         }
     } catch(PDOException $e) {
-        header("Location: gestion_testimonios.php?error=" . urlencode($e->getMessage()));
+        header("Location: gestion_instituciones.php?error=" . urlencode($e->getMessage()));
         exit();
     }
 }
@@ -44,13 +45,14 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
 // Procesar el formulario cuando se envía
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Recoger y sanitizar los datos del formulario
-    $nombreuniversidad = trim($_POST['nombreuniversidad']);
+    $nombre = trim($_POST['nombre']);
     $descripcion = trim($_POST['descripcion']);
     $imagen_url = trim($_POST['imagen_url']);
     $pais = trim($_POST['pais']);
-    $sitio_web = trim($_POST['sitio_web']);
-    $tipo_institucion = trim($_POST['tipo_institucion']);
+    $ciudad = trim($_POST['ciudad']);
+    $tipo = trim($_POST['tipo']);
     $convenio = trim($_POST['convenio']);
+    $url = trim($_POST['url']);
     $estado = trim($_POST['estado']);
     $user_encargado = $_SESSION['username']; // Obtener el usuario de la sesión
     
@@ -59,10 +61,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Campos requeridos
     $requiredFields = [
-        'nombreuniversidad' => 'Nombre de la universidad',
-        'descripcion' => 'Descripción',
+        'nombre' => 'Nombre de la institución',
         'pais' => 'País',
-        'tipo_institucion' => 'Tipo de institución',
+        'tipo' => 'Tipo de institución',
         'estado' => 'Estado'
     ];
     
@@ -84,14 +85,15 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         try {
             if($isEdit) {
                 // Actualizar registro existente
-                $stmt = $conn->prepare("UPDATE data_universidades SET 
-                    nombreuniversidad = :nombreuniversidad,
+                $stmt = $conn->prepare("UPDATE data_instituciones SET 
+                    nombre = :nombre,
                     descripcion = :descripcion,
                     imagen_url = :imagen_url,
                     pais = :pais,
-                    sitio_web = :sitio_web,
-                    tipo_institucion = :tipo_institucion,
+                    ciudad = :ciudad,
+                    tipo = :tipo,
                     convenio = :convenio,
+                    url = :url,
                     estado = :estado,
                     user_encargado = :user_encargado,
                     fecha_modificada = NOW()
@@ -100,45 +102,46 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             } else {
                 // Insertar nuevo registro
-                $stmt = $conn->prepare("INSERT INTO data_universidades (
-                    nombreuniversidad, descripcion, imagen_url, pais, sitio_web, 
-                    tipo_institucion, convenio, estado, user_encargado, fecha_creacion, fecha_modificada
+                $stmt = $conn->prepare("INSERT INTO data_instituciones (
+                    nombre, descripcion, imagen_url, pais, ciudad, tipo, 
+                    convenio, url, estado, user_encargado, fecha_creacion, fecha_modificada
                 ) VALUES (
-                    :nombreuniversidad, :descripcion, :imagen_url, :pais, :sitio_web,
-                    :tipo_institucion, :convenio, :estado, :user_encargado, NOW(), NOW()
+                    :nombre, :descripcion, :imagen_url, :pais, :ciudad, :tipo,
+                    :convenio, :url, :estado, :user_encargado, NOW(), NOW()
                 )");
             }
             
             // Bind parameters
-            $stmt->bindParam(':nombreuniversidad', $nombreuniversidad);
+            $stmt->bindParam(':nombre', $nombre);
             $stmt->bindParam(':descripcion', $descripcion);
             $stmt->bindParam(':imagen_url', $imagen_url);
             $stmt->bindParam(':pais', $pais);
-            $stmt->bindParam(':sitio_web', $sitio_web);
-            $stmt->bindParam(':tipo_institucion', $tipo_institucion);
+            $stmt->bindParam(':ciudad', $ciudad);
+            $stmt->bindParam(':tipo', $tipo);
             $stmt->bindParam(':convenio', $convenio);
+            $stmt->bindParam(':url', $url);
             $stmt->bindParam(':estado', $estado);
             $stmt->bindParam(':user_encargado', $user_encargado);
             
             // Ejecutar
             if($stmt->execute()) {
-                $msg = $isEdit ? "Universidad actualizada correctamente" : "Universidad registrada correctamente";
-                header("Location: gestion_universidades.php?success=" . urlencode($msg));
+                $msg = $isEdit ? "Institución actualizada correctamente" : "Institución registrada correctamente";
+                header("Location: gestion_instituciones.php?success=" . urlencode($msg));
                 exit();
             } else {
-                $error = $isEdit ? "Error al actualizar la universidad" : "Error al registrar la universidad";
-                header("Location: registrar_universidad.php?id=$id&error=" . urlencode($error));
+                $error = $isEdit ? "Error al actualizar la institución" : "Error al registrar la institución";
+                header("Location: registrar_instituciones.php?id=$id&error=" . urlencode($error));
                 exit();
             }
         } catch(PDOException $e) {
             $error = "Error en la base de datos: " . $e->getMessage();
-            header("Location: registrar_universidad.php?id=$id&error=" . urlencode($error));
+            header("Location: registrar_instituciones.php?id=$id&error=" . urlencode($error));
             exit();
         }
         
     } else {
         $error = implode("<br>", $errors);
-        header("Location: registrar_universidad.php?id=$id&error=" . urlencode($error));
+        header("Location: registrar_instituciones.php?id=$id&error=" . urlencode($error));
         exit();
     }
 }
@@ -150,10 +153,10 @@ include '../includes/header.php';
 <div class="container-xxl flex-grow-1 container-p-y">
 <h4 class="fw-bold py-3 mb-4">
     <span class="text-muted fw-light">
-        Universidades / 
-        <a href="../pages/gestion_universidades.php" class=" text-primary text-decoration-none">Registros</a> / 
+        Instituciones / 
+        <a href="../pages/gestion_instituciones.php" class=" text-primary text-decoration-none">Registros</a> / 
     </span>
-    <?php echo $isEdit ? 'Editar Universidad' : 'Agregar Nueva Universidad'; ?>
+    <?php echo $isEdit ? 'Editar Institución' : 'Agregar Nueva Institución'; ?>
 </h4>
     <?php if (isset($_GET['success'])): ?>
     <div class="alert alert-success"><?php echo htmlspecialchars($_GET['success']); ?></div>
@@ -164,9 +167,9 @@ include '../includes/header.php';
     <?php endif; ?>
     
     <div class="card">
-      <h5 class="card-header">Información de la Universidad</h5>
+      <h5 class="card-header">Información de la Institución</h5>
       <div class="card-body">
-      <form class="needs-validation" id="formUniversidad" method="POST" novalidate>
+      <form class="needs-validation" id="formInstitucion" method="POST" novalidate>
         <!-- Campo oculto para el ID en caso de edición -->
         <?php if($isEdit): ?>
         <input type="hidden" name="id" value="<?php echo $id; ?>">
@@ -176,8 +179,8 @@ include '../includes/header.php';
         <div class="row mb-2">
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label" for="universidad-id">ID</label>
-                <input type="text" class="form-control" name="universidad-id" id="universidad-id" 
+                <label class="form-label" for="institucion-id">ID</label>
+                <input type="text" class="form-control" name="institucion-id" id="institucion-id" 
                        value="<?php echo $isEdit ? $id : 'Generado automáticamente'; ?>" readonly>
             </div>
             </div>
@@ -186,22 +189,22 @@ include '../includes/header.php';
                 <label class="form-label" for="estado">Estado*</label>
                 <select class="form-select" name="estado" id="estado" required>
                 <option value="">Seleccionar estado</option>
-                <option value="Publicado" <?php echo ($estado == 'Publicado') ? 'selected' : ''; ?>>Publicado</option>
-                <option value="Oculto" <?php echo ($estado == 'Oculto') ? 'selected' : ''; ?>>Oculto</option>
+                <option value="Activo" <?php echo ($estado == 'Activo') ? 'selected' : ''; ?>>Activo</option>
+                <option value="Inactivo" <?php echo ($estado == 'Inactivo') ? 'selected' : ''; ?>>Inactivo</option>
                 </select>
                 <div class="invalid-feedback">Por favor seleccione el estado</div>
             </div>
             </div>
         </div>
 
-        <!-- Fila 2 - Nombre de la universidad y País -->
+        <!-- Fila 2 - Nombre de la institución y País -->
         <div class="row mb-2">
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label" for="nombreuniversidad">Nombre de la Universidad*</label>
-                <input type="text" class="form-control" name="nombreuniversidad" id="nombreuniversidad" 
-                       placeholder="Nombre completo de la universidad" value="<?php echo htmlspecialchars($nombreuniversidad); ?>" required>
-                <div class="invalid-feedback">Por favor ingrese el nombre de la universidad</div>
+                <label class="form-label" for="nombre">Nombre de la Institución*</label>
+                <input type="text" class="form-control" name="nombre" id="nombre" 
+                       placeholder="Nombre completo de la institución" value="<?php echo htmlspecialchars($nombre); ?>" required>
+                <div class="invalid-feedback">Por favor ingrese el nombre de la institución</div>
             </div>
             </div>
             <div class="col-md-6">
@@ -214,24 +217,35 @@ include '../includes/header.php';
             </div>
         </div>
 
-        <!-- Fila 3 - Tipo de institución y Convenio -->
+        <!-- Fila 3 - Ciudad y Tipo -->
         <div class="row mb-2">
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label" for="tipo_institucion">Tipo de Institución*</label>
-                <select class="form-select" name="tipo_institucion" id="tipo_institucion" required>
+                <label class="form-label" for="ciudad">Ciudad</label>
+                <input type="text" class="form-control" name="ciudad" id="ciudad" 
+                       placeholder="Ciudad donde se encuentra" value="<?php echo htmlspecialchars($ciudad); ?>">
+            </div>
+            </div>
+            <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label" for="tipo">Tipo de Institución*</label>
+                <select class="form-select" name="tipo" id="tipo" required>
                 <option value="">Seleccionar tipo</option>
-                <option value="Pública" <?php echo ($tipo_institucion == 'Pública') ? 'selected' : ''; ?>>Pública</option>
-                <option value="Privada" <?php echo ($tipo_institucion == 'Privada') ? 'selected' : ''; ?>>Privada</option>
-                <option value="Mixta" <?php echo ($tipo_institucion == 'Mixta') ? 'selected' : ''; ?>>Mixta</option>
+                <option value="Educativa" <?php echo ($tipo == 'Educativa') ? 'selected' : ''; ?>>Educativa</option>
+                <option value="Pública" <?php echo ($tipo == 'Pública') ? 'selected' : ''; ?>>Pública</option>
+                <option value="Privada" <?php echo ($tipo == 'Privada') ? 'selected' : ''; ?>>Privada</option>
                 </select>
                 <div class="invalid-feedback">Por favor seleccione el tipo de institución</div>
             </div>
             </div>
+        </div>
+
+        <!-- Fila 4 - Convenio y URL -->
+        <div class="row mb-2">
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label" for="convenio">Convenio</label>
-                <select class="form-select" name="convenio" id="convenio">
+                <label class="form-label" for="convenio">Convenio*</label>
+                <select class="form-select" name="convenio" id="convenio" required>
                 <option value="">Seleccionar estado de convenio</option>
                 <option value="Si" <?php echo ($convenio == 'Si') ? 'selected' : ''; ?>>Sí</option>
                 <option value="No" <?php echo ($convenio == 'No') ? 'selected' : ''; ?>>No</option>
@@ -239,19 +253,19 @@ include '../includes/header.php';
                 </select>
             </div>
             </div>
-        </div>
-
-        <!-- Fila 4 - Sitio web y Imagen URL -->
-        <div class="row mb-2">
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label" for="sitio_web">Sitio Web</label>
-                <input type="text" class="form-control" name="sitio_web" id="sitio_web" 
-                       placeholder="www.universidad.edu" value="<?php echo htmlspecialchars($sitio_web); ?>">
+                <label class="form-label" for="url">URL</label>
+                <input type="text" class="form-control" name="url" id="url" 
+                       placeholder="www.institucion.com" value="<?php echo htmlspecialchars($url); ?>">
                 <small class="text-muted">Ingrese el sitio web sin http:// o https://</small>
             </div>
             </div>
-            <div class="col-md-6">
+        </div>
+
+        <!-- Fila 5 - Imagen URL -->
+        <div class="row mb-2">
+            <div class="col-12">
             <div class="mb-3">
                 <label class="form-label" for="imagen_url">Imagen URL</label>
                 <input type="url" class="form-control" name="imagen_url" id="imagen_url" 
@@ -267,19 +281,19 @@ include '../includes/header.php';
             </div>
         </div>
 
-        <!-- Fila 5 - Descripción -->
+        <!-- Fila 6 - Descripción -->
         <div class="row mb-2">
             <div class="col-12">
             <div class="mb-3">
-                <label class="form-label" for="descripcion">Descripción*</label>
-                <textarea class="form-control" name="descripcion" id="descripcion" 
-                          rows="5" required><?php echo htmlspecialchars($descripcion); ?></textarea>
+                <label class="form-label" for="descripcion">Descripción</label>
+                <textarea class="form-control" name="descripcion" id="descripcion" rows="5">
+                    <?php echo htmlspecialchars($descripcion); ?></textarea>
                 <div class="invalid-feedback">Por favor ingrese la descripción</div>
             </div>
             </div>
         </div>
 
-        <!-- Fila 6 - Usuario Encargado -->
+        <!-- Fila 7 - Usuario Encargado -->
         <div class="row mb-2">
             <div class="col-12">
                 <div class="mb-3">
@@ -300,9 +314,9 @@ include '../includes/header.php';
         <div class="row">
             <div class="col-12">
             <div class="d-flex justify-content-between">
-                <a href="gestion_universidades.php" class="btn btn-secondary">Cancelar</a>
+                <a href="gestion_instituciones.php" class="btn btn-secondary">Cancelar</a>
                 <button type="submit" class="btn btn-primary">
-                    <?php echo $isEdit ? 'Actualizar Universidad' : 'Guardar Universidad'; ?>
+                    <?php echo $isEdit ? 'Actualizar Institución' : 'Guardar Institución'; ?>
                 </button>
             </div>
             </div>
@@ -320,7 +334,7 @@ include '../includes/header.php';
 <script>
         // Validación de formulario
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('formUniversidad');
+            const form = document.getElementById('formInstitucion');
             
             if (form) {
                 form.addEventListener('submit', function(e) {
@@ -333,8 +347,8 @@ include '../includes/header.php';
             }
             
             // Configuración de DataTable si existe la tabla
-            if ($('#tabla-universidades').length) {
-                $('#tabla-universidades').DataTable({
+            if ($('#tabla-instituciones').length) {
+                $('#tabla-instituciones').DataTable({
                     language: {
                         url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
                     },

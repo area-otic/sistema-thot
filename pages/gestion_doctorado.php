@@ -71,7 +71,7 @@ include '../includes/header.php';
                 <tbody>
                     <?php
                     // Consulta a la base de datos - ORDEN DESCENDENTE POR ID
-                    $stmt = $conn->query("SELECT * FROM data_doctorados ORDER BY id DESC");
+                    $stmt = $conn->query("SELECT * FROM data_programas WHERE tipo = 'Doctorado' ORDER BY id DESC");
                     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                         echo "<tr>
                                 <td>{$row['id']}</td>
@@ -211,21 +211,37 @@ include '../includes/header.php';
         $(document).ready(function() {
             $('#tabla-doctorados').DataTable({
                 language: {
-                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' // Español
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
                 },
-                responsive: true, // Hace que la tabla sea responsive
-                ordering: true, // Permite ordenar las columnas
-                searching: true, // Habilita la búsqueda
-                paging: true, // Habilita la paginación
-                lengthMenu: [15, 20, 30, 50], // Opciones de cantidad de registros por página
-                order: [[0, 'desc']], // Orden inicial: columna 0 (ID) descendente
+                responsive: {
+                    details: {
+                        type: 'column',
+                        target: -1
+                    }
+                },
+                scrollX: true,  // Cambiado a true para mejor manejo horizontal
+                scrollCollapse: true,
+                paging: true,
+                lengthMenu: [15, 20, 30, 50],
+                order: [[0, 'desc']],
                 columnDefs: [
-                    { orderable: true, targets: [0] }, // ID ordenable
-                    { orderable: true, targets: [1] }, // Título ordenable
-                    { orderable: true, targets: [2] }, // Universidad ordenable
-                    { orderable: true, targets: [3] }, // Tipo ordenable
-                    { orderable: true, targets: [4] }  // Categoría ordenable
-                ]
+                    { responsivePriority: 1, targets: 1 }, // Prioridad a Título
+                    { responsivePriority: 2, targets: 2 }, // Prioridad a Universidad
+                    { responsivePriority: 3, targets: 3 }, // Prioridad a País
+                    { 
+                        targets: 5, // Columna de Acciones
+                        orderable: false,
+                        width: '8%'
+                    },
+                    { 
+                        targets: [0, 4], // ID y Estado
+                        responsivePriority: 4 
+                    }
+                ],
+                dom: '<"top"lf>rt<"bottom"ip>',
+                initComplete: function() {
+                    $('.dataTables_scrollBody').css('min-height', '300px');
+                }
             });
         });
 

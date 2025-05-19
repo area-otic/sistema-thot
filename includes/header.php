@@ -77,9 +77,8 @@
               </a>
             </li>
 
-            <!-- Forms & Tables -->
+            <!-- Programas -->
             <li class="menu-header small text-uppercase"><span class="menu-header-text">Módulos </span></li>
-            <!-- Forms -->
             <li class="menu-item">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bxs-graduation"></i>
@@ -98,19 +97,21 @@
                 </li>
               </ul>
             </li>
-            <!-- Tables -->
+             <!-- Instituciones -->
+            <li class="menu-item">
+              <a href="../pages/gestion_instituciones.php" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-building"></i>
+                <div data-i18n="Tables">Instituciones</div>
+              </a>
+            </li>
+            <!-- Testimonios -->
             <li class="menu-item">
               <a href="../pages/gestion_testimonios.php" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-certification"></i>
                 <div data-i18n="Tables">Testimonios</div>
               </a>
             </li>
-            <li class="menu-item">
-              <a href="../pages/gestion_universidades.php" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-building"></i>
-                <div data-i18n="Tables">Universidades</div>
-              </a>
-            </li>
+
             <!-- Misc -->
             <li class="menu-header small text-uppercase"><span class="menu-header-text">configuracion</span></li>
             <li class="menu-item">

@@ -48,72 +48,90 @@ include '../includes/header.php';
                 </div>
             </div>
     </div>-->
+    <style>
+    #tabla-maestrias th:nth-child(1),
+    #tabla-maestrias td:nth-child(1) {
+        width: 3%;
+    }
+
+    #tabla-maestrias th:nth-child(2),
+    #tabla-maestrias td:nth-child(2) {
+        width: 30%;
+    }
+
+    #tabla-maestrias th:nth-child(5),
+    #tabla-maestrias td:nth-child(5) {
+        width: 10%;
+    }
+    </style>
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Lista de Maestrías</h5> <!-- Título a la izquierda -->
             <div>
               <a class="btn btn-secondary" href='importar_maestrias.php'>Importar</a>
-              <a class="btn btn-primary" href='registrar_maestria2.php'>Registrar Maestría</a>  
-          </div>
+              <a class="btn btn-primary" href='registrar_maestria.php'>Registrar Maestría</a>  
+            </div>
         </div>
-        <div class="table-responsive text-nowrap" style="margin: 20px;">
-            <table id="tabla-maestrias" class="datatables-basic table table-bordered  dataTable dtr-column collapsed" >
-                <thead >
-                    <tr >
-                        <th>ID</th>
-                        <th>Título</th>
-                        <th>Universidad</th>                        
-                        <th>País</th>
-                        <th>Estado</th>
-                        <th >Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    // Consulta a la base de datos - ORDEN DESCENDENTE POR ID
-                    $stmt = $conn->query("SELECT * FROM data_maestrias ORDER BY id DESC");
-                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                        echo "<tr>
-                                <td>{$row['id']}</td>
-                                <td>" . ($row['titulo'] ?? 'N/A') . "</td>
-                                <td>" . ($row['universidad'] ?? 'N/A') . "</td>                                
-                                <td>" . ($row['pais'] ?? 'N/A') . "</td>
-                                <td><span class='badge " . ($row['estado_programa'] == 'Publicado' ? 'bg-label-success' : 'bg-label-secondary') . "'>" . ($row['estado_programa'] ?? 'N/A') . "</span></td>
-                                <td>
-                                    <button
-                                        type='button'
-                                        class='btn btn-secondary btn-sm btn-ver'
-                                        data-bs-toggle='modal'
-                                        data-bs-target='#modalCenter'
-                                        data-id='{$row['id']}'
-                                        data-titulo='{$row['titulo']}'
-                                        data-descripcion='" . ($row['descripcion'] ?? '') . "'
-                                        data-tipo='" . ($row['tipo'] ?? '') . "'
-                                        data-categoria='" . ($row['categoria'] ?? '') . "'
-                                        data-universidad='" . ($row['universidad'] ?? '') . "'
-                                        data-pais='" . ($row['pais'] ?? '') . "'
-                                        data-modalidad='" . ($row['modalidad'] ?? '') . "'
-                                        data-duracion='" . ($row['duracion'] ?? '') . "'
-                                        data-imagen='" . ($row['imagen_url'] ?? '') . "'
-                                        data-objetivos='" . ($row['objetivos'] ?? '') . "'
-                                        data-plan='" . ($row['plan_estudios'] ?? '') . "'
-                                        data-url='" . ($row['url'] ?? '') . "'
-                                        data-estado='" . ($row['estado_programa'] ?? '') . "'
-                                        data-fecha='" . ($row['fecha_modificada'] ?? '') . "'
-                                    >
-                                        <i class='bx bx-show'></i>
-                                    </button>
-                                        <a href='registrar_maestria2.php?id={$row['id']}' class='btn btn-info btn-sm'><i class='bx bx-edit'></i>
-                                    </a>
-                                        <a href='../control/pr_eliminar_maestria.php?id={$row['id']}' class='btn btn-danger btn-sm'><i class='bx bx-trash'></i>
-                                    </a>
-                                </td>
-                            </tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
+        <div class="card-body">
+            <div class="table-responsive" style="margin: 10px;">
+                <table id="tabla-maestrias" class="datatables-basic table table-bordered  dataTable dtr-column collapsed" >
+                    <thead >
+                        <tr >
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Universidad</th>                        
+                            <th>País</th>
+                            <th>Estado</th>
+                            <th >Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        // Consulta a la base de datos - ORDEN DESCENDENTE POR ID
+                        $stmt = $conn->query("SELECT * FROM data_programas WHERE tipo = 'Maestría' ORDER BY id DESC");
+                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            echo "<tr>
+                                    <td>{$row['id']}</td>
+                                    <td>" . ($row['titulo'] ?? 'N/A') . "</td>
+                                    <td>" . ($row['universidad'] ?? 'N/A') . "</td>                                
+                                    <td>" . ($row['pais'] ?? 'N/A') . "</td>
+                                    <td><span class='badge " . ($row['estado_programa'] == 'Publicado' ? 'bg-label-success' : 'bg-label-secondary') . "'>" . ($row['estado_programa'] ?? 'N/A') . "</span></td>
+                                    <td>
+                                        <button
+                                            type='button'
+                                            class='btn btn-secondary btn-sm btn-ver'
+                                            data-bs-toggle='modal'
+                                            data-bs-target='#modalCenter'
+                                            data-id='{$row['id']}'
+                                            data-titulo='{$row['titulo']}'
+                                            data-descripcion='" . ($row['descripcion'] ?? '') . "'
+                                            data-tipo='" . ($row['tipo'] ?? '') . "'
+                                            data-categoria='" . ($row['categoria'] ?? '') . "'
+                                            data-universidad='" . ($row['universidad'] ?? '') . "'
+                                            data-pais='" . ($row['pais'] ?? '') . "'
+                                            data-modalidad='" . ($row['modalidad'] ?? '') . "'
+                                            data-duracion='" . ($row['duracion'] ?? '') . "'
+                                            data-imagen='" . ($row['imagen_url'] ?? '') . "'
+                                            data-objetivos='" . ($row['objetivos'] ?? '') . "'
+                                            data-plan='" . ($row['plan_estudios'] ?? '') . "'
+                                            data-url='" . ($row['url'] ?? '') . "'
+                                            data-estado='" . ($row['estado_programa'] ?? '') . "'
+                                            data-fecha='" . ($row['fecha_modificada'] ?? '') . "'
+                                        >
+                                            <i class='bx bx-show'></i>
+                                        </button>
+                                            <a href='registrar_maestria.php?id={$row['id']}' class='btn btn-info btn-sm'><i class='bx bx-edit'></i>
+                                        </a>
+                                            <a href='../control/pr_eliminar_maestria.php?id={$row['id']}' class='btn btn-danger btn-sm'><i class='bx bx-trash'></i>
+                                        </a>
+                                    </td>
+                                </tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -214,23 +232,37 @@ include '../includes/header.php';
     $(document).ready(function() {
         $('#tabla-maestrias').DataTable({
             language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' // Español
+                url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
             },
-            scrollX: false,
-            responsive: true, // Hace que la tabla sea responsive
-            ordering: true, // Permite ordenar las columnas
-            searching: true, // Habilita la búsqueda
-            paging: true, // Habilita la paginación
-            lengthMenu: [15, 20, 30, 50], // Opciones de cantidad de registros por página
-            order: [[0, 'desc']], // Orden inicial: columna 0 (ID) descendente
+            responsive: {
+                details: {
+                    type: 'column',
+                    target: -1
+                }
+            },
+            scrollX: true,  // Cambiado a true para mejor manejo horizontal
+            scrollCollapse: true,
+            paging: true,
+            lengthMenu: [15, 20, 30, 50],
+            order: [[0, 'desc']],
             columnDefs: [
-                { orderable: true, targets: [0] }, // ID ordenable
-                { orderable: true, targets: [1] }, // Título ordenable
-                { orderable: true, targets: [2] }, // Universidad ordenable
-                { orderable: true, targets: [3] }, // Tipo ordenable
-                { orderable: true, targets: [5] },  // Categoría ordenable
-                { orderable: true, targets: [4] }  // Categoría ordenable
-            ]
+                { responsivePriority: 1, targets: 1 }, // Prioridad a Título
+                { responsivePriority: 2, targets: 2 }, // Prioridad a Universidad
+                { responsivePriority: 3, targets: 3 }, // Prioridad a País
+                { 
+                    targets: 5, // Columna de Acciones
+                    orderable: false,
+                    width: '8%'
+                },
+                { 
+                    targets: [0, 4], // ID y Estado
+                    responsivePriority: 4 
+                }
+            ],
+            dom: '<"top"lf>rt<"bottom"ip>',
+            initComplete: function() {
+                $('.dataTables_scrollBody').css('min-height', '300px');
+            }
         });
     });
 

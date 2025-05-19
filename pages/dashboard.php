@@ -4,7 +4,7 @@ include '../includes/header.php';
 include '../includes/db.php'; // Asegúrate de incluir tu conexión a DB
 
 // Consulta para obtener el conteo de maestrías por categoría
-$stmt = $conn->query("SELECT pais, COUNT(*) as total FROM data_maestrias GROUP BY pais");
+$stmt = $conn->query("SELECT pais, COUNT(*) as total FROM data_programas GROUP BY pais");
 $categorias = [];
 $totales = [];
 
@@ -12,6 +12,18 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $categorias[] = $row['pais'];
     $totales[] = $row['total'];
 }
+
+// Consulta para obtener el conteo de maestrías (data_programas)
+$stmt_programas = $conn->query("SELECT COUNT(*) as total FROM data_programas");
+$total_programas = $stmt_programas->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Consulta para obtener el conteo de universidades (data_instituciones)
+$stmt_instituciones = $conn->query("SELECT COUNT(*) as total FROM data_instituciones");
+$total_instituciones = $stmt_instituciones->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Consulta para obtener el conteo de testimonios (data_testimonios)
+$stmt_testimonios = $conn->query("SELECT COUNT(*) as total FROM data_testimonios");
+$total_testimonios = $stmt_testimonios->fetch(PDO::FETCH_ASSOC)['total'];
 ?>
 
 <!-- Content -->
@@ -54,8 +66,8 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                   </span>                    
                   </div>                  
                 </div>
-                <span class="d-block mb-1">Maestrías</span>
-                <h3 class="card-title text-nowrap mb-2">752</h3>
+                <span class="d-block mb-1">Programas</span>
+                <h3 class="card-title text-nowrap mb-2"><?php echo $total_programas; ?></h3>
                 <!--<small class="text-danger fw-semibold"><i class="bx bx-down-arrow-alt"></i> -14.82%</small>-->
               </div>
             </div>
@@ -71,7 +83,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                   </div>                
                 </div>
                 <span class="fw-semibold d-block mb-1">Universidades</span>
-                <h3 class="card-title mb-2">57</h3>
+                <h3 class="card-title mb-2"><?php echo $total_instituciones; ?></h3>
                 <!--<small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.14%</small>-->
               </div>
             </div>
@@ -88,7 +100,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                   </div>                  
                 </div>
                 <span class="fw-semibold d-block mb-1">Testimonios</span>
-                <h3 class="card-title mb-2">28</h3>
+                <h3 class="card-title mb-2"><?php echo $total_testimonios; ?></h3>
                 <!--<small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +72.80%</small>-->
               </div>
             </div>

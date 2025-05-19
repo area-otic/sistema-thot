@@ -61,7 +61,7 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
     }
     
     // Preparar consulta SQL
-    $sql = "INSERT INTO data_maestrias (
+    $sql = "INSERT INTO data_programas (
         titulo, descripcion, tipo, categoria, universidad, pais, 
         modalidad, duracion, imagen_url, objetivos, plan_estudios, url, 
         estado_programa, user_encargado, fecha_creacion, fecha_modificada
@@ -154,7 +154,7 @@ function procesarExcel($ruta_archivo, $fecha_actual) {
     }
     
     // Preparar consulta SQL
-    $sql = "INSERT INTO data_maestrias (
+    $sql = "INSERT INTO data_programas (
         titulo, descripcion, tipo, categoria, universidad, pais, 
         modalidad, duracion, imagen_url, objetivos, plan_estudios, url, 
         estado_programa, user_encargado, fecha_creacion, fecha_modificada
