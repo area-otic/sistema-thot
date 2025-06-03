@@ -17,7 +17,7 @@ try {
     $universidades = $stmtUniversidades->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
     $universidades = [];
-    error_log("Error al obtener universidades: " . $e->getMessage());
+    $error = "Error al obtener universidades: " . $e->getMessage();
 }
 
 // Inicializar variables
@@ -196,12 +196,17 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: registrar_maestria.php?id=$id&error=" . urlencode($error));
         exit();
     }
-}
+}// Definir $precio_moneda para evitar errores en JavaScript
+$precio_moneda = '';
 
 // Incluir el header
 include '../includes/header.php';
 ?>
+<!-- Select2 CSS con tema Bootstrap 5 -->
 
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-3 mb-4">
         <span class="text-muted fw-light">
@@ -248,11 +253,8 @@ include '../includes/header.php';
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Tipo*</label>
-                            <select class="form-select" name="maestria-tipo" required>
-                                <option value="">Seleccionar...</option>
+                            <select class="form-select" name="maestria-tipo" required readonly> 
                                 <option value="Maestría" <?= ($tipo == 'Maestría') ? 'selected' : '' ?>>Maestría</option>
-                                <option value="Doctorado" <?= ($tipo == 'Doctorado') ? 'selected' : '' ?>>Doctorado</option>
-                                <option value="Diplomado" <?= ($tipo == 'Diplomado') ? 'selected' : '' ?>>Diplomado</option>
                                 
                             </select>
                             <div class="invalid-feedback">Por favor seleccione el tipo</div>
@@ -284,32 +286,36 @@ include '../includes/header.php';
                 <div class="mb-4">
                     <h6 class="mb-3 text-primary"><i class="bx bx-building-house me-2"></i>Institución y Ubicación</h6>
                     <div class="row g-3">
-                        <!-- En la sección del formulario, modificar el campo de universidad: -->
+                        <!-- Universidad -->
                         <div class="col-md-6">
                             <label class="form-label">Universidad*</label>
                             <select class="form-select select2-universidad" id="maestria-universidad" name="maestria-universidad" required>
                                 <option value="">Seleccionar universidad...</option>
                                 <?php foreach($universidades as $uni): ?>
-                                    <option value="<?= htmlspecialchars($uni['nombre']) ?>" 
-                                        <?= ($universidad == $uni['nombre']) ? 'selected' : '' ?>
-                                        data-pais="<?= htmlspecialchars($uni['pais']) ?>"
-                                        data-ciudad="<?= htmlspecialchars($uni['ciudad']) ?>">
-                                        <?= htmlspecialchars($uni['nombre']) ?> (<?= htmlspecialchars($uni['ciudad']) ?>, <?= htmlspecialchars($uni['pais']) ?>)
+                                    <option 
+                                        value="<?php echo htmlspecialchars($uni['id']); ?>" 
+                                        data-pais="<?php echo htmlspecialchars($uni['pais']); ?>"
+                                        data-ciudad="<?php echo htmlspecialchars($uni['ciudad']); ?>"
+                                    >
+                                        <?php echo htmlspecialchars($uni['nombre']); ?> (<?php echo htmlspecialchars($uni['ciudad']); ?>, <?php echo htmlspecialchars($uni['pais']); ?>)
                                     </option>
                                 <?php endforeach; ?>
                             </select>
                             <div class="invalid-feedback">Por favor seleccione una universidad</div>
                         </div>
-                        
+
+                        <!-- País (solo lectura) -->
                         <div class="col-md-3">
                             <label class="form-label">País*</label>
-                            <select class="form-select select2" id="select-pais" name="maestria-pais" required>
-                                <option value="">Cargando países...</option>
-                            </select>
+                            <input type="text" class="form-control" id="select-pais" name="maestria-pais" readonly required>
+                            <div class="invalid-feedback">El país es obligatorio</div>
                         </div>
+
+                        <!-- Ciudad (solo lectura) -->
                         <div class="col-md-3">
-                            <label class="form-label">Ciudad</label>
-                            <input type="text" class="form-control" name="maestria-ciudad-universidad" value="<?= htmlspecialchars($ciudad_universidad) ?>" >
+                            <label class="form-label">Ciudad*</label>
+                            <input type="text" class="form-control" id="maestria-ciudad" name="maestria-ciudad" readonly required>
+                            <div class="invalid-feedback">La ciudad es obligatoria</div>
                         </div>
                     </div>
                 </div>
@@ -392,11 +398,11 @@ include '../includes/header.php';
                         </div>
                         <div class="col-12">
                             <label class="form-label">Objetivos*</label>
-                            <textarea class="form-control" name="maestria-objetivos" rows="3" required><?= htmlspecialchars($objetivos) ?></textarea>
+                            <textarea class="form-control" name="maestria-objetivos" rows="3" ><?= htmlspecialchars($objetivos) ?></textarea>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Plan de Estudios*</label>
-                            <textarea class="form-control" name="maestria-plan" rows="5" required><?= htmlspecialchars($plan_estudios) ?></textarea>
+                            <textarea class="form-control" name="maestria-plan" rows="5" ><?= htmlspecialchars($plan_estudios) ?></textarea>
                         </div>
                     </div>
                 </div>
@@ -420,8 +426,7 @@ include '../includes/header.php';
                         </div>
                     </div>
                 </div>
-                
-                <!-- BOTONES DE ACCIÓN -->
+                 <!-- BOTONES DE ACCIÓN -->
                 <div class="d-flex justify-content-between mt-4">
                     <a href="gestion_maestrias.php" class="btn btn-outline-secondary">
                         <i class="bx bx-arrow-back me-1"></i> Cancelar
@@ -433,33 +438,47 @@ include '../includes/header.php';
             </form>
         </div>
     </div>
-
 </div>
-   <!-- jQuery -->
-   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-   <!-- Select2 para búsqueda de países -->
-   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    // Validación de formulario
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('https://restcountries.com/v3.1/all')
+$(document).ready(function() {
+    // Inicializar Select2 para universidades
+    $('.select2-universidad').select2({
+        placeholder: "Seleccionar universidad...",
+        allowClear: true
+    });
+
+    // Inicializar Select2 para moneda
+    $('.select2-moneda').select2({
+        placeholder: "Seleccionar moneda...",
+        allowClear: true
+    });
+
+    // Manejar cambio de universidad
+    $('#maestria-universidad').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        const pais = selectedOption.data('pais') || '';
+        const ciudad = selectedOption.data('ciudad') || '';
+
+        // Actualizar campos relacionados
+        $('#select-pais').val(pais);
+        $('#maestria-ciudad').val(ciudad);
+
+        // Forzar validación
+        $('#select-pais').trigger('change');
+        $('#maestria-ciudad').trigger('change');
+    });
+
+    // Poblar el dropdown de monedas
+    fetch('https://restcountries.com/v3.1/all')
         .then(res => res.json())
         .then(data => {
-            const paisSelect = document.getElementById('select-pais');
             const monedaSelect = document.getElementById('select-moneda');
             const monedasUnicas = new Set();
 
-            // Ordenar países por nombre en español
-            const paisesOrdenados = data.sort((a, b) => {
-                const nombreA = a.translations?.spa?.common || a.name.common;
-                const nombreB = b.translations?.spa?.common || b.name.common;
-                return nombreA.localeCompare(nombreB, 'es');
-            });
-
-            paisSelect.innerHTML = '<option value="">Seleccionar país...</option>';
-            monedaSelect.innerHTML = '<option value=""<?= htmlspecialchars($precio_moneda) ?>>Seleccionar moneda...</option>';
+            monedaSelect.innerHTML = '<option value="">Seleccionar moneda...</option>';
 
             // Diccionario de monedas en español
             const monedasES = {
@@ -495,20 +514,11 @@ include '../includes/header.php';
                 RUB: "Rublo ruso",
                 TRY: "Lira turca",
                 ZAR: "Rand sudafricano"
-                // Agrega más si lo necesitas
             };
 
-            paisesOrdenados.forEach(pais => {
-                const nombrePais = pais.translations?.spa?.common || pais.name.common;
+            // Procesar todos los países para obtener sus monedas
+            data.forEach(pais => {
                 const monedas = pais.currencies;
-
-                // País
-                const optionPais = document.createElement('option');
-                optionPais.value = nombrePais;
-                optionPais.textContent = nombrePais;
-                paisSelect.appendChild(optionPais);
-
-                // Monedas únicas
                 if (monedas) {
                     for (const codigo in monedas) {
                         if (!monedasUnicas.has(codigo)) {
@@ -524,21 +534,37 @@ include '../includes/header.php';
             });
         })
         .catch(err => {
-            console.error('Error al cargar países/monedas', err);
+            console.error('Error al cargar monedas:', err);
+            const monedaSelect = document.getElementById('select-moneda');
+            monedaSelect.innerHTML = '<option value="">Seleccionar moneda...</option>';
+            const monedasDefault = {
+                USD: "Dólar estadounidense",
+                EUR: "Euro",
+                MXN: "Peso mexicano"
+            };
+            for (const [codigo, nombre] of Object.entries(monedasDefault)) {
+                const option = document.createElement('option');
+                option.value = codigo;
+                option.textContent = `${codigo} - ${nombre}`;
+                monedaSelect.appendChild(option);
+            }
         });
 
-        const form = document.getElementById('formMaestria');
-        
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                if (!form.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    form.classList.add('was-validated');
-                }
-            });
-        }
-    });
+    // Validación del formulario
+    const form = document.getElementById('formUniversidad');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+                form.classList.add('was-validated');
+            } else {
+                console.log('Formulario válido, enviando datos...');
+                // Aquí puedes agregar lógica para procesar el formulario
+            }
+        });
+    }
+});
 </script>
 
 <?php include '../includes/footer.php'; ?>

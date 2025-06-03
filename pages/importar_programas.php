@@ -1,9 +1,17 @@
 <?php 
 include '../control/check_session.php';
-include '../includes/header.php'; 
+include '../includes/header.php';
+
+$origen = $_GET['origen'] ?? ''; // Capturamos el parámetro de origen
+
+// Puedes usar esta variable para mostrar contenido diferente o guardarla en sesión
+if ($origen === 'maestria') {
+    // Aquí puedes establecer una variable de sesión o lógica específica para maestrías
+    $_SESSION['origen_importacion'] = 'maestria';
+}
 ?>
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h2>Importar Doctorados desde Archivo</h2>
+    <h2>Importar Maestrías desde Archivo</h2>
     
     <div class="card">
         <h5 class="card-header">Cargar Archivo</h5>

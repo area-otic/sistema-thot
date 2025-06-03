@@ -69,7 +69,8 @@ include '../includes/header.php';
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Lista de Maestrías</h5> <!-- Título a la izquierda -->
             <div>
-              <a class="btn btn-secondary" href='importar_maestrias.php'>Importar</a>
+              <a class="btn btn-secondary" href='importar_pro.php?origen=maestria'>Pro-Importar</a>
+              <a class="btn btn-secondary" href='importar_programas.php?origen=maestria'>Importar</a>
               <a class="btn btn-primary" href='registrar_maestria.php'>Registrar Maestría</a>  
             </div>
         </div>

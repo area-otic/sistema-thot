@@ -52,7 +52,7 @@ include '../includes/header.php';
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Lista de Doctorados</h5> <!-- Título a la izquierda -->
             <div>
-              <a class="btn btn-secondary" href='importar_doctorado.php'>Importar</a>
+              <a class="btn btn-secondary" href='importar_pro.php?origen=doctorado'>Importar</a>
               <a class="btn btn-primary" href='registrar_doctorado.php'>Registrar Doctorado</a>  
           </div>
         </div>

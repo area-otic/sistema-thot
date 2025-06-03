@@ -24,16 +24,16 @@
     <!-- / Layout wrapper -->
 
     
-
     <!-- Core JS -->
-    <!-- build:js assets/vendor/js/core.js-->
-    <script src="../assets/js/jquery.js"></script> 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- build:js assets/vendor/js/core.js
+    <script src="../assets/js/jquery.js"></script> -->
     <script src="../assets/js/popper.js"></script>
     <script src="../assets/js/bootstrap.js"></script>
     <script src="../assets/js/perfect-scrollbar.js"></script>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
 
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -66,11 +66,5 @@
           });
       }
     </script>
-
-    <!-- Page JS 
-    <script src="../assets/js/dashboards-analytics.js"></script>-->
-
-    <!-- Place this tag in your head or just before your close body tag. 
-    <script async defer src="https://buttons.github.io/buttons.js"></script>-->
   </body>
 </html>

@@ -209,9 +209,10 @@ include '../includes/header.php';
             </div>
             <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label" for="pais">País*</label>
-                <input type="text" class="form-control" name="pais" id="pais" 
-                       placeholder="País donde se encuentra" value="<?php echo htmlspecialchars($pais); ?>" required>
+                <label class="form-label">País*</label>
+                <select class="form-select select2" id="pais" name="pais" required>
+                    <option value="">Cargando países...</option>
+                </select>
                 <div class="invalid-feedback">Por favor ingrese el país</div>
             </div>
             </div>
@@ -332,34 +333,65 @@ include '../includes/header.php';
    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 <script>
-        // Validación de formulario
+        
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('formInstitucion');
-            
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    if (!form.checkValidity()) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                });
-            }
-            
-            // Configuración de DataTable si existe la tabla
-            if ($('#tabla-instituciones').length) {
-                $('#tabla-instituciones').DataTable({
-                    language: {
-                        url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
-                    },
-                    responsive: true,
-                    ordering: true,
-                    searching: true,
-                    paging: true,
-                    lengthMenu: [15, 20, 30, 50]
-                });
-            }
+        fetch('https://restcountries.com/v3.1/all')
+        .then(res => res.json())
+        .then(data => {
+            const paisSelect = document.getElementById('pais');
+
+            // Ordenar países por nombre en español
+            const paisesOrdenados = data.sort((a, b) => {
+                const nombreA = a.translations?.spa?.common || a.name.common;
+                const nombreB = b.translations?.spa?.common || b.name.common;
+                return nombreA.localeCompare(nombreB, 'es');
+            });
+
+            paisSelect.innerHTML = '<option value="">Seleccionar país...</option>';
+           
+            paisesOrdenados.forEach(pais => {
+                const nombrePais = pais.translations?.spa?.common || pais.name.common;
+                const monedas = pais.currencies;
+
+                // País
+                const optionPais = document.createElement('option');
+                optionPais.value = nombrePais;
+                optionPais.textContent = nombrePais;
+                paisSelect.appendChild(optionPais);
+            });
+        })
+        .catch(err => {
+            console.error('Error al cargar países/monedas', err);
         });
+
+        const form = document.getElementById('formMaestria');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    form.classList.add('was-validated');
+                }
+            });
+        }
+    });
+
+    // Validación de formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formInstitucion');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+        }
+        
+    });
 </script>
 
 <?php include '../includes/footer.php'; ?>

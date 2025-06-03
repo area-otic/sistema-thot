@@ -1,950 +1,568 @@
-
 <?php 
+include '../includes/db.php';
 include '../control/check_session.php';
-include '../includes/header.php';
-include '../includes/db.php'; // Asegúrate de incluir tu conexión a DB
 
-// Consulta para obtener el conteo de maestrías por categoría
-$stmt = $conn->query("SELECT pais, COUNT(*) as total FROM data_maestrias GROUP BY pais");
-$categorias = [];
-$totales = [];
-
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $categorias[] = $row['pais'];
-    $totales[] = $row['total'];
+// Obtener categorías de la base de datos
+try {
+    $stmtCategorias = $conn->query("SELECT id, nombre FROM categorias_programas ORDER BY nombre");
+    $categorias = $stmtCategorias->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    $categorias = [];
+    error_log("Error al obtener categorías: " . $e->getMessage());
 }
+
+// Obtener universidades de la base de datos
+try {
+    $stmtUniversidades = $conn->query("SELECT id, nombre, pais, ciudad FROM data_instituciones WHERE estado = 'Activo' ORDER BY nombre");
+    $universidades = $stmtUniversidades->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    $universidades = [];
+    $error = "Error al obtener universidades: " . $e->getMessage();
+}
+
+// Inicializar variables
+$titulo = $descripcion = $tipo = $categoria = $universidad = $pais = $modalidad = $duracion = $imagen_url = $objetivos = $plan_estudios = $url = $estado_programa = '';
+$precio_monto = $precio_moneda = $idioma = $fecha_admision = $titulo_grado = $ciudad_universidad = $docentes = $url_brochure = '';
+$id = null;
+$isEdit = false;
+
+// Verificar si es una edición (se pasó ID por GET)
+if(isset($_GET['id']) && !empty($_GET['id'])) {
+    $id = $_GET['id'];
+    $isEdit = true;
+    
+    // Obtener datos de la maestría
+    try {
+        $stmt = $conn->prepare("SELECT * FROM data_programas WHERE id = :id");
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        if($stmt->rowCount() > 0) {
+            $maestria = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Asignar valores a las variables
+            $titulo = $maestria['titulo'];
+            $descripcion = $maestria['descripcion'];
+            $tipo = $maestria['tipo'];
+            $categoria = $maestria['categoria'];
+            $universidad = $maestria['universidad'];
+            $pais = $maestria['pais'];
+            $modalidad = $maestria['modalidad'];
+            $duracion = $maestria['duracion'];
+            $imagen_url = $maestria['imagen_url'];
+            $objetivos = $maestria['objetivos'];
+            $plan_estudios = $maestria['plan_estudios'];
+            $url = $maestria['url'];
+            $estado_programa = $maestria['estado_programa'];
+            $precio_monto = $maestria['precio_monto'];
+            $precio_moneda = $maestria['precio_moneda'];
+            $idioma = $maestria['idioma'];
+            $fecha_admision = $maestria['fecha_admision'];
+            $titulo_grado = $maestria['titulo_grado'];
+            $ciudad_universidad = $maestria['ciudad_universidad'];
+            $docentes = $maestria['docentes'];
+            $url_brochure = $maestria['url_brochure'];
+            
+        } else {
+            header("Location: gestion_maestrias.php?error=Maestría no encontrada");
+            exit();
+        }
+    } catch(PDOException $e) {
+        header("Location: gestion_maestrias.php?error=" . urlencode($e->getMessage()));
+        exit();
+    }
+}
+
+// Procesar el formulario cuando se envía
+if($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Recoger y sanitizar los datos del formulario
+    $titulo = trim($_POST['maestria-titulo']);
+    $descripcion = trim($_POST['maestria-descripcion']);
+    $tipo = trim($_POST['maestria-tipo']);
+    $categoria = trim($_POST['maestria-categoria']);
+    $universidad = trim($_POST['maestria-universidad']);
+    $pais = trim($_POST['maestria-pais']);
+    $modalidad = trim($_POST['maestria-modalidad']);
+    $duracion = trim($_POST['maestria-duracion']);
+    $imagen_url = trim($_POST['maestria-imagen']);
+    $objetivos = trim($_POST['maestria-objetivos']);
+    $plan_estudios = trim($_POST['maestria-plan']);
+    $url = trim($_POST['maestria-url']);
+    $estado_programa = trim($_POST['maestria-estado']);
+    $precio_monto = trim($_POST['maestria-precio-monto']);
+    $precio_moneda = trim($_POST['maestria-precio-moneda']);
+    $idioma = trim($_POST['maestria-idioma']);
+    $fecha_admision = trim($_POST['maestria-fecha-admision']);
+    $titulo_grado = trim($_POST['maestria-titulo-grado']);
+    $ciudad_universidad = trim($_POST['maestria-ciudad-universidad']);
+    $docentes = trim($_POST['maestria-docentes']);
+    $url_brochure = trim($_POST['maestria-url-brochure']);
+    $user_encargado = $_SESSION['username']; // Obtener el usuario de la sesión
+    
+    // Validación del lado del servidor
+    $errors = [];
+    
+    // Si no hay errores, procesar
+    if (empty($errors)) {
+        try {
+            if($isEdit) {
+                // Actualizar registro existente
+                $stmt = $conn->prepare("UPDATE data_programas SET 
+                    titulo = :titulo,
+                    descripcion = :descripcion,
+                    tipo = :tipo,
+                    categoria = :categoria,
+                    universidad = :universidad,
+                    pais = :pais,
+                    modalidad = :modalidad,
+                    duracion = :duracion,
+                    imagen_url = :imagen_url,
+                    objetivos = :objetivos,
+                    plan_estudios = :plan_estudios,
+                    url = :url,
+                    estado_programa = :estado_programa,
+                    precio_monto = :precio_monto,
+                    precio_moneda = :precio_moneda,
+                    idioma = :idioma,
+                    fecha_admision = :fecha_admision,
+                    titulo_grado = :titulo_grado,
+                    ciudad_universidad = :ciudad_universidad,
+                    docentes = :docentes,
+                    url_brochure = :url_brochure,
+                    user_encargado = :user_encargado,
+                    fecha_modificada = NOW()
+                    WHERE id = :id");
+                    
+                $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            } else {
+                // Insertar nuevo registro
+                $stmt = $conn->prepare("INSERT INTO data_programas (
+                    titulo, descripcion, tipo, categoria, universidad, pais, 
+                    modalidad, duracion, imagen_url, objetivos, plan_estudios, 
+                    url, estado_programa, precio_monto, precio_moneda, idioma,
+                    fecha_admision, titulo_grado, ciudad_universidad, docentes,
+                    url_brochure, user_encargado, fecha_creacion, fecha_modificada
+                ) VALUES (
+                    :titulo, :descripcion, :tipo, :categoria, :universidad, :pais,
+                    :modalidad, :duracion, :imagen_url, :objetivos, :plan_estudios,
+                    :url, :estado_programa, :precio_monto, :precio_moneda, :idioma,
+                    :fecha_admision, :titulo_grado, :ciudad_universidad, :docentes,
+                    :url_brochure, :user_encargado, NOW(), NOW()
+                )");
+            }
+            
+            // Bind parameters
+            $stmt->bindParam(':titulo', $titulo);
+            $stmt->bindParam(':descripcion', $descripcion);
+            $stmt->bindParam(':tipo', $tipo);
+            $stmt->bindParam(':categoria', $categoria);
+            $stmt->bindParam(':universidad', $universidad);
+            $stmt->bindParam(':pais', $pais);
+            $stmt->bindParam(':modalidad', $modalidad);
+            $stmt->bindParam(':duracion', $duracion);
+            $stmt->bindParam(':imagen_url', $imagen_url);
+            $stmt->bindParam(':objetivos', $objetivos);
+            $stmt->bindParam(':plan_estudios', $plan_estudios);
+            $stmt->bindParam(':url', $url);
+            $stmt->bindParam(':estado_programa', $estado_programa);
+            $stmt->bindParam(':precio_monto', $precio_monto);
+            $stmt->bindParam(':precio_moneda', $precio_moneda);
+            $stmt->bindParam(':idioma', $idioma);
+            $stmt->bindParam(':fecha_admision', $fecha_admision);
+            $stmt->bindParam(':titulo_grado', $titulo_grado);
+            $stmt->bindParam(':ciudad_universidad', $ciudad_universidad);
+            $stmt->bindParam(':docentes', $docentes);
+            $stmt->bindParam(':url_brochure', $url_brochure);
+            $stmt->bindParam(':user_encargado', $user_encargado);
+            
+            // Ejecutar
+            if($stmt->execute()) {
+                $msg = $isEdit ? "Maestría actualizada correctamente" : "Maestría registrada correctamente";
+                header("Location: gestion_maestrias.php?success=" . urlencode($msg));
+                exit();
+            } else {
+                $error = $isEdit ? "Error al actualizar la maestría" : "Error al registrar la maestría";
+                header("Location: registrar_maestria.php?id=$id&error=" . urlencode($error));
+                exit();
+            }
+        } catch(PDOException $e) {
+            $error = "Error en la base de datos: " . $e->getMessage();
+            header("Location: registrar_maestria.php?id=$id&error=" . urlencode($error));
+            exit();
+        }
+        
+    } else {
+        $error = implode("<br>", $errors);
+        header("Location: registrar_maestria.php?id=$id&error=" . urlencode($error));
+        exit();
+    }
+}// Definir $precio_moneda para evitar errores en JavaScript
+$precio_moneda = '';
+
+// Incluir el header
+include '../includes/header.php';
 ?>
 
 <div class="container-xxl flex-grow-1 container-p-y">
-          
-  <div class="row">
-    <!-- Customer Ratings -->
-    <div class="col-md-6 col-xxl-4 mb-6">
-      <div class="card h-100">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <h5 class="card-title m-0 me-2">Customer Ratings</h5>
-          <div class="dropdown">
-            <button class="btn p-0" type="button" id="customerRatings" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="icon-base bx bx-dots-vertical-rounded icon-lg text-body-secondary"></i>
-            </button>
-            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="customerRatings">
-              <a class="dropdown-item" href="javascript:void(0);">Featured Ratings</a>
-              <a class="dropdown-item" href="javascript:void(0);">Based on Task</a>
-              <a class="dropdown-item" href="javascript:void(0);">See All</a>
-            </div>
-          </div>
-        </div>
-        <div class="card-body pb-0">
-          <div class="d-flex align-items-center gap-2 mb-1">
-            <h2 class="mb-0">4.0</h2>
-            <div class="ratings">
-              <i class="icon-base bx bxs-star icon-lg text-warning"></i>
-              <i class="icon-base bx bxs-star icon-lg text-warning"></i>
-              <i class="icon-base bx bxs-star icon-lg text-warning"></i>
-              <i class="icon-base bx bxs-star icon-lg text-warning"></i>
-              <i class="icon-base bx bxs-star icon-lg text-lighter"></i>
-            </div>
-          </div>
-          <div class="d-flex align-items-center">
-            <span class="badge bg-label-primary me-2">+5.0</span>
-            <span>Points from last month</span>
-          </div>
-        </div>
-        <div id="customerRatingsChart"></div>
-      </div>
-    </div>
-    <!--/ Customer Ratings -->
-    <!-- Overview & Sales Activity -->
-    <div class="col-md-6 col-xxl-4 mb-6">
-      <div class="card h-100 gap-12">
-        <div class="card-header d-flex justify-content-between">
-          <div class="card-title me-2">
-            <h5 class="mb-1">Overview & Sales Activity</h5>
-            <p class="card-subtitle">Check out each column for more details</p>
-          </div>
-          <div class="dropdown">
-            <button class="btn p-0" type="button" id="salesActivity" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="icon-base bx bx-dots-vertical-rounded icon-lg text-body-secondary"></i>
-            </button>
-            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="salesActivity">
-              <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-              <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-              <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
-            </div>
-          </div>
-        </div>
-        <div class="card-body px-1 pb-0">
-          <div id="salesActivityChart"></div>
-        </div>
-      </div>
-    </div>
-    <!--/ Overview & Sales Activity -->
-    <div class="col-12 col-md-12 col-xxl-4">
-      <div class="row">
-        <div class="col-6 col-md-3 col-xxl-6 mb-6">
-          <div class="card h-100">
-            <div class="card-body pb-4">
-              <span class="d-block fw-medium mb-1">Sessions</span>
-              <h4 class="card-title mb-0">2,845</h4>
-            </div>
-            <div id="sessionsChart" class="mb-0"></div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3 col-xxl-6 mb-6">
-          <div class="card h-100">
-            <div class="card-body">
-              <div class="card-title d-flex align-items-start justify-content-between mb-4">
-                <div class="avatar flex-shrink-0">
-                  <img src="../../assets/img/icons/unicons/cube-secondary.png" alt="cube" class="rounded" />
-                </div>
-                <div class="dropdown">
-                  <button class="btn p-0" type="button" id="cardOpt2" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="icon-base bx bx-dots-vertical-rounded text-body-secondary"></i>
-                  </button>
-                  <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt2">
-                    <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                    <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                  </div>
-                </div>
-              </div>
-              <p class="mb-1">Order</p>
-              <h4 class="card-title mb-3">$1,286</h4>
-              <small class="text-danger fw-medium"><i class="icon-base bx bx-down-arrow-alt"></i> -13.24%</small>
-            </div>
-          </div>
-        </div>
-        <div class="col-12 col-md-6 col-xxl-12 mb-6">
-          <div class="card h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between">
-                <div class="d-flex flex-column">
-                  <div class="card-title mb-auto">
-                    <h5 class="mb-0">Generated Leads</h5>
-                    <p class="mb-0">Monthly Report</p>
-                  </div>
-                  <div class="chart-statistics">
-                    <h4 class="card-title mb-0">4,230</h4>
-                    <p class="text-success text-nowrap mb-0"><i class="icon-base bx bx-chevron-up icon-lg"></i> +12.8%</p>
-                  </div>
-                </div>
-                <div id="leadsReportChart"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <!-- Top Products by -->
-    <div class="col-12 col-xxl-8 mb-6">
-      <div class="card h-100">
-        <div class="row row-bordered g-0 h-100">
-          <div class="col-md-6">
-            <div class="card-header d-flex align-items-center justify-content-between">
-              <h5 class="card-title m-0 me-2">Top Products by <span class="text-primary">Sales</span></h5>
-              <div class="dropdown">
-                <button class="btn p-0" type="button" id="topSales" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="icon-base bx bx-dots-vertical-rounded icon-lg text-body-secondary"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="topSales">
-                  <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-                  <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-                  <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
-                </div>
-              </div>
-            </div>
-            <div class="card-body pt-6">
-              <ul class="p-0 m-0">
-                <li class="d-flex align-items-center mb-7">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <img src="../../assets/img/icons/unicons/oneplus.png" alt="oneplus" />
-                  </div>
-                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="me-2">
-                      <h6 class="mb-0">Oneplus Nord</h6>
-                      <small class="d-block">Oneplus</small>
-                    </div>
-                    <div class="user-progress d-flex align-items-center gap-1">
-                      <span class="fw-medium">$98,348</span>
-                    </div>
-                  </div>
-                </li>
-                <li class="d-flex align-items-center mb-7">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <img src="../../assets/img/icons/unicons/watch-primary.png" alt="smart band" />
-                  </div>
-                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="me-2">
-                      <h6 class="mb-0">Smart Band 4</h6>
-                      <small class="d-block">Xiaomi</small>
-                    </div>
-                    <div class="user-progress d-flex align-items-center gap-1">
-                      <span class="fw-medium">$15,459</span>
-                    </div>
-                  </div>
-                </li>
-                <li class="d-flex align-items-center mb-7">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <img src="../../assets/img/icons/unicons/surface.png" alt="Surface" />
-                  </div>
-                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="me-2">
-                      <h6 class="mb-0">Surface Pro X</h6>
-                      <small class="d-block">Miscrosoft</small>
-                    </div>
-                    <div class="user-progress d-flex align-items-center gap-1">
-                      <span class="fw-medium">$4,589</span>
-                    </div>
-                  </div>
-                </li>
-                <li class="d-flex align-items-center mb-7">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <img src="../../assets/img/icons/unicons/iphone.png" alt="iphone" />
-                  </div>
-                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="me-2">
-                      <h6 class="mb-0">iphone 13</h6>
-                      <small class="d-block">Apple</small>
-                    </div>
-                    <div class="user-progress d-flex align-items-center gap-1">
-                      <span class="fw-medium">$84,345</span>
-                    </div>
-                  </div>
-                </li>
-                <li class="d-flex align-items-center">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <img src="../../assets/img/icons/unicons/earphone.png" alt="Bluetooth Earphone" />
-                  </div>
-                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="me-2">
-                      <h6 class="mb-0">Bluetooth Earphone</h6>
-                      <small class="d-block">Beats</small>
-                    </div>
-                    <div class="user-progress d-flex align-items-center gap-1">
-                      <span class="fw-medium">$10,374</span>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card-header d-flex align-items-center justify-content-between">
-              <h5 class="card-title m-0 me-2">Top Products by <span class="text-primary">Volume</span></h5>
-              <div class="dropdown">
-                <button class="btn p-0" type="button" id="topVolume" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="icon-base bx bx-dots-vertical-rounded icon-lg text-body-secondary"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="topVolume">
-                  <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-                  <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-                  <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
-                </div>
-              </div>
-            </div>
-            <div class="card-body pt-6">
-              <ul class="p-0 m-0">
-                <li class="d-flex align-items-center mb-7">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <img src="../../assets/img/icons/unicons/laptop-secondary.png" alt="ENVY Laptop" class="rounded" />
-                  </div>
-                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="me-2">
-                      <h6 class="mb-0">ENVY Laptop</h6>
-                      <small class="d-block">HP</small>
-                    </div>
-                    <div class="user-progress d-flex align-items-center gap-3">
-                      <span class="fw-medium">124k</span>
-                      <span class="badge bg-label-success">+12.4%</span>
-                    </div>
-                  </div>
-                </li>
-                <li class="d-flex align-items-center mb-7">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <img src="../../assets/img/icons/unicons/computer.png" alt="Apple" class="rounded" />
-                  </div>
-                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="me-2">
-                      <h6 class="mb-0">Apple</h6>
-                      <small class="d-block">iMac Pro</small>
-                    </div>
-                    <div class="user-progress d-flex align-items-center gap-3">
-                      <span class="fw-medium">74.9k</span>
-                      <span class="badge bg-label-danger">-8.5%</span>
-                    </div>
-                  </div>
-                </li>
-                <li class="d-flex align-items-center mb-7">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <img src="../../assets/img/icons/unicons/watch.png" alt="Smart Watch" class="rounded" />
-                  </div>
-                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="me-2">
-                      <h6 class="mb-0">Smart Watch</h6>
-                      <small class="d-block">Fitbit</small>
-                    </div>
-                    <div class="user-progress d-flex align-items-center gap-3">
-                      <span class="fw-medium">4.4k</span>
-                      <span class="badge bg-label-success">+62.6%</span>
-                    </div>
-                  </div>
-                </li>
-                <li class="d-flex align-items-center mb-7">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <img src="../../assets/img/icons/unicons/oneplus-success.png" alt="Oneplus RT" class="rounded" />
-                  </div>
-                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="me-2">
-                      <h6 class="mb-0">Oneplus RT</h6>
-                      <small class="d-block">Oneplus</small>
-                    </div>
-                    <div class="user-progress d-flex align-items-center gap-3">
-                      <span class="fw-medium">12,3k.71</span>
-                      <span class="badge bg-label-success">+16.7%</span>
-                    </div>
-                  </div>
-                </li>
-                <li class="d-flex align-items-center">
-                  <div class="avatar flex-shrink-0 me-3">
-                    <img src="../../assets/img/icons/unicons/pixel.png" alt="Pixel 4a" class="rounded" />
-                  </div>
-                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                    <div class="me-2">
-                      <h6 class="mb-0">Pixel 4a</h6>
-                      <small class="d-block">Google</small>
-                    </div>
-                    <div class="user-progress d-flex align-items-center gap-3">
-                      <span class="fw-medium">834k</span>
-                      <span class="badge bg-label-danger">-12.9%</span>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Top Products by -->
+    <h4 class="fw-bold py-3 mb-4">
+        <span class="text-muted fw-light">
+            Maestrías / 
+            <a href="../pages/gestion_maestrias.php" class=" text-primary text-decoration-none">Registros</a> / 
+        </span>
+        <?php echo $isEdit ? 'Editar Maestría' : 'Agregar Nueva Maestría'; ?>
+    </h4>
 
-    <!-- Earning Reports -->
-    <div class="col-md-6 col-xxl-4 mb-6">
-      <div class="card h-100">
-        <div class="card-header d-flex justify-content-between">
-          <div class="card-title mb-0">
-            <h5 class="mb-1 me-2">Earning Reports</h5>
-            <p class="card-subtitle">Weekly Earnings Overview</p>
-          </div>
-          <div class="dropdown">
-            <button class="btn text-body-secondary p-0" type="button" id="earningReports" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="icon-base bx bx-dots-vertical-rounded icon-lg"></i>
-            </button>
-            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="earningReports">
-              <a class="dropdown-item" href="javascript:void(0);">Select All</a>
-              <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
-              <a class="dropdown-item" href="javascript:void(0);">Share</a>
-            </div>
-          </div>
-        </div>
-        <div class="card-body pb-0">
-          <ul class="p-0 m-0">
-            <li class="d-flex mb-6 pb-1">
-              <div class="avatar flex-shrink-0 me-3">
-                <span class="avatar-initial rounded bg-label-primary"><i class="icon-base bx bx-trending-up"></i></span>
-              </div>
-              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                <div class="me-2">
-                  <h6 class="mb-0">Net Profit</h6>
-                  <small class="text-body-secondary">12.4k Sales</small>
-                </div>
-                <div class="user-progress"><span class="me-3">$1,619</span><i class="icon-base bx bx-chevron-up text-success ms-1"></i> <span>18.6%</span></div>
-              </div>
-            </li>
-            <li class="d-flex mb-6 pb-1">
-              <div class="avatar flex-shrink-0 me-3">
-                <span class="avatar-initial rounded bg-label-success"><i class="icon-base bx bx-dollar"></i></span>
-              </div>
-              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                <div class="me-2">
-                  <h6 class="mb-0">Total Income</h6>
-                  <small class="text-body-secondary">Sales, Affiliation</small>
-                </div>
-                <div class="user-progress"><span class="me-3">$3,571</span><i class="icon-base bx bx-chevron-up text-success ms-1"></i> <span>39.6%</span></div>
-              </div>
-            </li>
-            <li class="d-flex mb-6 pb-1">
-              <div class="avatar flex-shrink-0 me-3">
-                <span class="avatar-initial rounded bg-label-secondary"><i class="icon-base bx bx-credit-card"></i></span>
-              </div>
-              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                <div class="me-2">
-                  <h6 class="mb-0">Total Expenses</h6>
-                  <small class="text-body-secondary">ADVT, Marketing</small>
-                </div>
-                <div class="user-progress"><span class="me-3">$430</span><i class="icon-base bx bx-chevron-up text-success ms-1"></i> <span>52.8%</span></div>
-              </div>
-            </li>
-          </ul>
-          <div id="reportBarChart"></div>
-        </div>
-      </div>
-    </div>
-    <!--/ Earning Reports -->
+    <?php if (isset($_GET['success'])): ?>
+    <div class="alert alert-success"><?php echo htmlspecialchars($_GET['success']); ?></div>
+    <?php endif; ?>
+    
+    <?php if(isset($_GET['error'])): ?>
+        <div class="alert alert-danger"><?php echo htmlspecialchars($_GET['error']); ?></div>
+    <?php endif; ?>
 
-    <!-- Sales Analytics -->
-    <div class="col-md-6 col-xxl-4 mb-6">
-      <div class="card h-100">
-        <div class="card-header d-flex align-items-start justify-content-between">
-          <div>
-            <h5 class="card-title m-0 me-2 mb-2">Sales Analytics</h5>
-            <span class="badge bg-label-success me-1">+42.6%</span> <span>Than last year</span>
-          </div>
-          <div class="btn-group">
-            <button type="button" class="btn btn-sm btn-label-primary">2022</button>
-            <button type="button" class="btn btn-sm btn-label-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-              <span class="visually-hidden">Toggle Dropdown</span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="javascript:void(0);">2021</a></li>
-              <li><a class="dropdown-item" href="javascript:void(0);">2020</a></li>
-              <li><a class="dropdown-item" href="javascript:void(0);">2019</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="card-body pb-0">
-          <div id="salesAnalyticsChart"></div>
-        </div>
-      </div>
-    </div>
-    <!--/ Sales Analytics -->
-
-    <!-- Sales By Country -->
-    <div class="col-md-6 col-xxl-4 mb-6">
-      <div class="card h-100">
-        <div class="card-header d-flex justify-content-between">
-          <div class="card-title mb-0">
-            <h5 class="mb-1 me-2">Sales by Countries</h5>
-            <p class="card-subtitle">Monthly Sales Overview</p>
-          </div>
-          <div class="dropdown">
-            <button class="btn text-body-secondary p-0" type="button" id="salesByCountry" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="icon-base bx bx-dots-vertical-rounded icon-lg"></i>
-            </button>
-            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="salesByCountry">
-              <a class="dropdown-item" href="javascript:void(0);">Select All</a>
-              <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
-              <a class="dropdown-item" href="javascript:void(0);">Share</a>
-            </div>
-          </div>
-        </div>
+    <div class="card">
+        <h5 class="card-header">Información de Maestría</h5>
         <div class="card-body">
-          <ul class="p-0 m-0">
-            <li class="d-flex align-items-center mb-6">
-              <div class="avatar flex-shrink-0 me-3">
-                <i class="fis fi fi-us rounded-circle fs-2"></i>
-              </div>
-              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                <div class="me-2">
-                  <div class="d-flex align-items-center">
-                    <h6 class="mb-0 me-2">$8,567k</h6>
-                    <small class="text-success fw-medium d-flex align-items-center gap-1">
-                      <i class="icon-base bx bx-chevron-up icon-md"></i>
-                      25.8%
-                    </small>
-                  </div>
-                  <small>United states of america</small>
+            <form class="needs-validation" id="formMaestria" method="POST" novalidate>
+                <?php if($isEdit): ?>
+                <input type="hidden" name="id" value="<?php echo $id; ?>">
+                <?php endif; ?>
+                
+                <!-- SECCIÓN 1: INFORMACIÓN BÁSICA -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-primary"><i class="bx bx-info-circle me-2"></i>Información Básica</h6>
+                    <div class="row g-3">
+                        <!-- Fila 1 -->
+                        <div class="col-md-4">
+                            <label class="form-label">ID</label>
+                            <input type="text" class="form-control" value="<?php echo $isEdit ? $id : 'Generado automáticamente'; ?>" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Modalidad*</label>
+                            <select class="form-select" name="maestria-modalidad" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Presencial" <?= ($modalidad == 'Presencial') ? 'selected' : '' ?>>Presencial</option>
+                                <option value="Online" <?= ($modalidad == 'Online') ? 'selected' : '' ?>>Online</option>
+                                <option value="Semipresencial" <?= ($modalidad == 'Semipresencial') ? 'selected' : '' ?>>Semipresencial</option>
+                            </select>
+                            <div class="invalid-feedback">Por favor seleccione la modalidad</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo*</label>
+                            <select class="form-select" name="maestria-tipo" required readonly> 
+                                <option value="Maestría" <?= ($tipo == 'Maestría') ? 'selected' : '' ?>>Maestría</option>
+                                
+                            </select>
+                            <div class="invalid-feedback">Por favor seleccione el tipo</div>
+                        </div>
+                        
+                        <!-- Fila 2 -->
+                        <div class="col-md-8">
+                            <label class="form-label">Título*</label>
+                            <input type="text" class="form-control" name="maestria-titulo" value="<?= htmlspecialchars($titulo) ?>" required>
+                            <div class="invalid-feedback">Por favor ingrese el título</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Categoría*</label>
+                            <select class="form-select" name="maestria-categoria" required>
+                                <option value="">Seleccionar categoría...</option>
+                                <?php foreach($categorias as $cat): ?>
+                                    <option value="<?= htmlspecialchars($cat['nombre']) ?>" 
+                                        <?= ($categoria == $cat['nombre']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($cat['nombre']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="invalid-feedback">Por favor seleccione una categoría</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="user-progress">
-                  <h6 class="mb-0">884k</h6>
+                
+                <!-- SECCIÓN 2: INSTITUCIÓN Y UBICACIÓN -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-primary"><i class="bx bx-building-house me-2"></i>Institución y Ubicación</h6>
+                    <div class="row g-3">
+                        <!-- Universidad -->
+                        <div class="col-md-6">
+                            <label class="form-label">Universidad*</label>
+                            <select class="form-select select2-universidad" id="maestria-universidad" name="maestria-universidad" required>
+                                <option value="">Seleccionar universidad...</option>
+                                <?php foreach($universidades as $uni): ?>
+                                    <option 
+                                        value="<?php echo htmlspecialchars($uni['id']); ?>" 
+                                        data-pais="<?php echo htmlspecialchars($uni['pais']); ?>"
+                                        data-ciudad="<?php echo htmlspecialchars($uni['ciudad']); ?>"
+                                    >
+                                        <?php echo htmlspecialchars($uni['nombre']); ?> (<?php echo htmlspecialchars($uni['ciudad']); ?>, <?php echo htmlspecialchars($uni['pais']); ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="invalid-feedback">Por favor seleccione una universidad</div>
+                        </div>
+
+                        <!-- País (solo lectura) -->
+                        <div class="col-md-3">
+                            <label class="form-label">País*</label>
+                            <input type="text" class="form-control" id="select-pais" name="maestria-pais" readonly required>
+                            <div class="invalid-feedback">El país es obligatorio</div>
+                        </div>
+
+                        <!-- Ciudad (solo lectura) -->
+                        <div class="col-md-3">
+                            <label class="form-label">Ciudad*</label>
+                            <input type="text" class="form-control" id="maestria-ciudad" name="maestria-ciudad" readonly required>
+                            <div class="invalid-feedback">La ciudad es obligatoria</div>
+                        </div>
+                    </div>
                 </div>
-              </div>
-            </li>
-            <li class="d-flex align-items-center mb-6">
-              <div class="avatar flex-shrink-0 me-3">
-                <i class="fis fi fi-br rounded-circle fs-2"></i>
-              </div>
-              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                <div class="me-2">
-                  <div class="d-flex align-items-center">
-                    <h6 class="mb-0 me-2">$2,415k</h6>
-                    <small class="text-danger fw-medium d-flex align-items-center gap-1">
-                      <i class="icon-base bx bx-chevron-down icon-md"></i>
-                      6.2%
-                    </small>
-                  </div>
-                  <small>Brazil</small>
+                
+                <!-- SECCIÓN 3: DETALLES ACADÉMICOS -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-primary"><i class="bx bx-book-open me-2"></i>Detalles Académicos</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Duración*</label>
+                            <input type="text" class="form-control" placeholder="Ej: 2 años, 6 meses"  name="maestria-duracion" value="<?= htmlspecialchars($duracion) ?>" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Fecha Admisión</label>
+                            <input type="date" class="form-control" name="maestria-fecha-admision" value="<?= htmlspecialchars($fecha_admision) ?>" >
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Idioma</label>
+                            <select class="form-select" name="maestria-idioma" >
+                                <option value="">Seleccionar...</option>
+                                <option value="Español" <?= ($idioma == 'Español') ? 'selected' : '' ?>>Español</option>
+                                <option value="Inglés" <?= ($idioma == 'Inglés') ? 'selected' : '' ?>>Inglés</option>
+                                <option value="Portugués" <?= ($idioma == 'Portugués') ? 'selected' : '' ?>>Portugués</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Título Grado</label>
+                            <input type="text" class="form-control" name="maestria-titulo-grado" value="<?= htmlspecialchars($titulo_grado) ?>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Precio</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" name="maestria-precio-monto" value="<?= htmlspecialchars($precio_monto) ?>">
+                                <select class="form-select" id="select-moneda" name="maestria-precio-moneda" style="max-width: 80%;">
+                                    <option value="">Cargando monedas...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-                <div class="user-progress">
-                  <h6 class="mb-0">645k</h6>
+                                
+                <!-- SECCIÓN 5: RECURSOS DIGITALES -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-primary"><i class="bx bx-link me-2"></i>Recursos Digitales</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Imagen Web URL*</label>
+                            <input type="url" class="form-control" name="maestria-imagen" placeholder="https://ejemplo.com/imagen.jpg" value="<?= htmlspecialchars($imagen_url) ?>" required>
+                            <?php if($isEdit && !empty($imagen_url)): ?>
+                            <div class="mt-2">
+                                <img src="<?= htmlspecialchars($imagen_url) ?>" alt="Imagen actual" style="max-height: 80px;" class="img-thumbnail">
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">URL Programa*</label>
+                            <input type="url" class="form-control" placeholder="https://" name="maestria-url" value="<?= htmlspecialchars($url) ?>" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">URL Brochure</label>
+                            <input type="url" class="form-control" placeholder="https://" name="maestria-url-brochure" value="<?= htmlspecialchars($url_brochure) ?>">
+                        </div>
+                    </div>
                 </div>
-              </div>
-            </li>
-            <li class="d-flex align-items-center mb-6">
-              <div class="avatar flex-shrink-0 me-3">
-                <i class="fis fi fi-in rounded-circle fs-2"></i>
-              </div>
-              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                <div class="me-2">
-                  <div class="d-flex align-items-center">
-                    <h6 class="mb-0 me-2">$865k</h6>
-                    <small class="text-success fw-medium d-flex align-items-center gap-1">
-                      <i class="icon-base bx bx-chevron-up icon-md"></i>
-                      12.4%
-                    </small>
-                  </div>
-                  <small>India</small>
+                
+                <!-- SECCIÓN 6: CONTENIDO ACADÉMICO -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-primary"><i class="bx bx-book-content me-2"></i>Contenido Académico</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Docentes</label>
+                            <textarea class="form-control" name="maestria-docentes" rows="2"><?= htmlspecialchars($docentes) ?></textarea>
+                            <small class="text-muted">Separar nombres con comas</small>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Descripción*</label>
+                            <textarea class="form-control" name="maestria-descripcion" rows="3" required><?= htmlspecialchars($descripcion) ?></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Objetivos*</label>
+                            <textarea class="form-control" name="maestria-objetivos" rows="3" ><?= htmlspecialchars($objetivos) ?></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Plan de Estudios*</label>
+                            <textarea class="form-control" name="maestria-plan" rows="5" ><?= htmlspecialchars($plan_estudios) ?></textarea>
+                        </div>
+                    </div>
                 </div>
-                <div class="user-progress">
-                  <h6 class="mb-0">148k</h6>
+                
+                <!-- SECCIÓN 7: CONFIGURACIÓN -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-primary"><i class="bx bx-cog me-2"></i>Configuración</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Estado*</label>
+                            <select class="form-select" name="maestria-estado" required>
+                                <option value="Oculto" <?= ($estado_programa == 'Oculto') ? 'selected' : '' ?>>Oculto</option>
+                                <option value="Publicado" <?= ($estado_programa == 'Publicado') ? 'selected' : '' ?>>Publicado</option>
+                            </select>
+                            <div class="invalid-feedback">Por favor seleccione el estado</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><?= $isEdit ? 'Modificado por' : 'Registrado por' ?></label>
+                            <input type="text" class="form-control" value="<?= htmlspecialchars($_SESSION['nombre']) ?>" readonly>
+                            <input type="hidden" name="user_encargado" value="<?= htmlspecialchars($_SESSION['username']) ?>">
+                        </div>
+                    </div>
                 </div>
-              </div>
-            </li>
-            <li class="d-flex align-items-center mb-6">
-              <div class="avatar flex-shrink-0 me-3">
-                <i class="fis fi fi-au rounded-circle fs-2"></i>
-              </div>
-              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                <div class="me-2">
-                  <div class="d-flex align-items-center">
-                    <h6 class="mb-0 me-2">$745k</h6>
-                    <small class="text-danger fw-medium d-flex align-items-center gap-1">
-                      <i class="icon-base bx bx-chevron-down icon-md"></i>
-                      11.9%
-                    </small>
-                  </div>
-                  <small>Australia</small>
+                 <!-- BOTONES DE ACCIÓN -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="gestion_maestrias.php" class="btn btn-outline-secondary">
+                        <i class="bx bx-arrow-back me-1"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bx bx-save me-1"></i> <?= $isEdit ? 'Actualizar Maestría' : 'Guardar Maestría' ?>
+                    </button>
                 </div>
-                <div class="user-progress">
-                  <h6 class="mb-0">86k</h6>
-                </div>
-              </div>
-            </li>
-            <li class="d-flex align-items-center mb-6">
-              <div class="avatar flex-shrink-0 me-3">
-                <i class="fis fi fi-fr rounded-circle fs-2"></i>
-              </div>
-              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                <div class="me-2">
-                  <div class="d-flex align-items-center">
-                    <h6 class="mb-0 me-2">$45</h6>
-                    <small class="text-success fw-medium d-flex align-items-center gap-1">
-                      <i class="icon-base bx bx-chevron-up icon-md"></i>
-                      16.2%
-                    </small>
-                  </div>
-                  <small>France</small>
-                </div>
-                <div class="user-progress">
-                  <h6 class="mb-0">42k</h6>
-                </div>
-              </div>
-            </li>
-            <li class="d-flex align-items-center">
-              <div class="avatar flex-shrink-0 me-3">
-                <i class="fis fi fi-cn rounded-circle fs-2"></i>
-              </div>
-              <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                <div class="me-2">
-                  <div class="d-flex align-items-center">
-                    <h6 class="mb-0 me-2">$12k</h6>
-                    <small class="text-success fw-medium d-flex align-items-center gap-1">
-                      <i class="icon-base bx bx-chevron-up icon-md"></i>
-                      14.8%
-                    </small>
-                  </div>
-                  <small>China</small>
-                </div>
-                <div class="user-progress">
-                  <h6 class="mb-0">18k</h6>
-                </div>
-              </div>
-            </li>
-          </ul>
+            </form>
         </div>
-      </div>
     </div>
-    <!--/ Sales By Country -->
+</div>
 
-    <!-- Sales Stats -->
-    <div class="col-md-6 col-xxl-4 mb-6">
-      <div class="card h-100">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <h5 class="card-title m-0 me-2">Sales Stats</h5>
-          <div class="dropdown">
-            <button class="btn p-0" type="button" id="salesStatsID" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="icon-base bx bx-dots-vertical-rounded icon-lg text-body-secondary"></i>
-            </button>
-            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="salesStatsID">
-              <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-              <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-              <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
-            </div>
-          </div>
-        </div>
-        <div id="salesStats"></div>
-        <div class="card-body">
-          <div class="d-flex justify-content-center align-items-center gap-4">
-            <div class="d-flex align-items-center"><span class="badge badge-dot bg-success me-2"></span> Conversion Ratio</div>
-            <div class="d-flex align-items-center"><span class="badge badge-dot bg-label-secondary me-2"></span> Total requirements</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--/ Sales Stats -->
+    <?php include '../includes/footer.php'; ?>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-    <!-- Team Members -->
-    <div class="col-xxl-5 mb-xxl-0 mb-6">
-      <div class="card h-100">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <h5 class="card-title m-0 me-2">Team Members</h5>
-          <div class="dropdown">
-            <button class="btn text-body-secondary p-0" type="button" id="teamMemberList" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="icon-base bx bx-dots-vertical-rounded icon-lg"></i>
-            </button>
-            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="teamMemberList">
-              <a class="dropdown-item" href="javascript:void(0);">Select All</a>
-              <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
-              <a class="dropdown-item" href="javascript:void(0);">Share</a>
-            </div>
-          </div>
-        </div>
-        <div class="table-responsive">
-          <table class="table table-borderless table-sm">
-            <thead>
-              <tr>
-                <th class="ps-6">Name</th>
-                <th>Project</th>
-                <th>Task</th>
-                <th class="pe-6">Progress</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar me-3">
-                      <img src="../../assets/img/avatars/17.png" alt="Avatar" class="rounded-circle" />
-                    </div>
-                    <div class="d-flex flex-column">
-                      <h6 class="mb-0 text-truncate">Nathan Wagner</h6>
-                      <small class="text-truncate text-body">iOS Developer</small>
-                    </div>
-                  </div>
-                </td>
-                <td><span class="badge bg-label-primary text-uppercase">Zipcar</span></td>
-                <td><span class="fw-medium">87/135</span></td>
-                <td>
-                  <div class="chart-progress" data-color="primary" data-series="65"></div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar me-3">
-                      <img src="../../assets/img/avatars/8.png" alt="Avatar" class="rounded-circle" />
-                    </div>
-                    <div class="d-flex flex-column">
-                      <h6 class="mb-0 text-truncate">Emma Bowen</h6>
-                      <small class="text-truncate text-body">UI/UX Designer</small>
-                    </div>
-                  </div>
-                </td>
-                <td><span class="badge bg-label-danger text-uppercase">Bitbank</span></td>
-                <td><span class="fw-medium">320/440</span></td>
-                <td>
-                  <div class="chart-progress" data-color="danger" data-series="85"></div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar me-3">
-                      <span class="avatar-initial rounded-circle bg-label-warning">AM</span>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <h6 class="mb-0 text-truncate">Adrian McGuire</h6>
-                      <small class="text-truncate text-body">PHP Developer</small>
-                    </div>
-                  </div>
-                </td>
-                <td><span class="badge bg-label-warning text-uppercase">Payers</span></td>
-                <td><span class="fw-medium">50/82</span></td>
-                <td>
-                  <div class="chart-progress" data-color="warning" data-series="73"></div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar me-3">
-                      <img src="../../assets/img/avatars/2.png" alt="Avatar" class="rounded-circle" />
-                    </div>
-                    <div class="d-flex flex-column">
-                      <h6 class="mb-0 text-truncate">Alma Gonzalez</h6>
-                      <small class="text-truncate text-body">Product Manager</small>
-                    </div>
-                  </div>
-                </td>
-                <td><span class="badge bg-label-info text-uppercase">Brandi</span></td>
-                <td><span class="fw-medium">98/260</span></td>
-                <td>
-                  <div class="chart-progress" data-color="info" data-series="61"></div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar me-3">
-                      <img src="../../assets/img/avatars/11.png" alt="Avatar" class="rounded-circle" />
-                    </div>
-                    <div class="d-flex flex-column">
-                      <h6 class="mb-0 text-truncate">Allan kristian</h6>
-                      <small class="text-truncate text-body">Frontend Designer</small>
-                    </div>
-                  </div>
-                </td>
-                <td><span class="badge bg-label-info text-uppercase">Crypter</span></td>
-                <td><span class="fw-medium">690/760</span></td>
-                <td>
-                  <div class="chart-progress" data-color="info" data-series="61"></div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <!--/ Team Members -->
+    <script>
+        $(document).ready(function() {
+            // Inicializar Select2 para universidades
+            $('.select2-universidad').select2({
+                placeholder: "Seleccionar universidad...",
+                allowClear: true
+            });
 
-    <!-- Customer Table -->
-    <div class="col-xxl-7 mb-0">
-      <div class="card">
-        <div class="card-datatable table-responsive">
-          <table class="invoice-list-table table table-border-top-0">
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th class="cell-fit">Paid By</th>
-                <th class="cell-fit">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="table-border-bottom-0">
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar-wrapper">
-                      <div class="avatar avatar-sm me-2">
-                        <img src="../../assets/img/avatars/7.png" alt="Avatar" class="rounded-circle" />
-                      </div>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <a href="pages-profile-user.html" class="text-heading text-truncate fw-medium">Henry Barnes</a>
-                      <small class="text-truncate text-body">jok@puc.co.uk</small>
-                    </div>
-                  </div>
-                </td>
-                <td>$459.65</td>
-                <td><span class="badge bg-label-success"> Paid </span></td>
-                <td class="text-center">
-                  <img src="../../assets/img/icons/payments/master-light.png" class="img-fluid" width="29" alt="masterCard" data-app-light-img="icons/payments/master-light.png" data-app-dark-img="icons/payments/master-dark.png" />
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                      <a href="javascript:;" class="btn dropdown-toggle hide-arrow p-0" data-bs-toggle="dropdown"><i class="icon-base bx bx-dots-vertical-rounded icon-md text-body"></i></a>
-                      <div class="dropdown-menu dropdown-menu-end">
-                        <a href="javascript:void(0);" class="dropdown-item">Edit</a>
-                        <a href="javascript:;" class="dropdown-item">Duplicate</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="javascript:;" class="dropdown-item delete-record text-danger">Delete</a>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar-wrapper">
-                      <div class="avatar avatar-sm me-2">
-                        <img src="../../assets/img/avatars/20.png" alt="Avatar" class="rounded-circle" />
-                      </div>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <a href="pages-profile-user.html" class="text-heading text-truncate fw-medium">Hallie Warner</a>
-                      <small class="text-truncate text-body">hellie@war.co.uk</small>
-                    </div>
-                  </div>
-                </td>
-                <td>$93.81</td>
-                <td><span class="badge bg-label-warning"> Pending </span></td>
-                <td class="text-center">
-                  <img src="../../assets/img/icons/payments/master-light.png" class="img-fluid" width="29" alt="masterCard" data-app-light-img="icons/payments/master-light.png" data-app-dark-img="icons/payments/master-dark.png" />
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                      <a href="javascript:;" class="btn dropdown-toggle hide-arrow p-0" data-bs-toggle="dropdown"><i class="icon-base bx bx-dots-vertical-rounded icon-md text-body"></i></a>
-                      <div class="dropdown-menu dropdown-menu-end">
-                        <a href="javascript:void(0);" class="dropdown-item">Edit</a>
-                        <a href="javascript:;" class="dropdown-item">Duplicate</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="javascript:;" class="dropdown-item delete-record text-danger">Delete</a>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar-wrapper">
-                      <div class="avatar avatar-sm me-2">
-                        <img src="../../assets/img/avatars/9.png" alt="Avatar" class="rounded-circle" />
-                      </div>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <a href="pages-profile-user.html" class="text-heading text-truncate fw-medium">Gerald Flowers</a>
-                      <small class="text-truncate text-body">initus@odemi.com</small>
-                    </div>
-                  </div>
-                </td>
-                <td>$934.35</td>
-                <td><span class="badge bg-label-warning"> Pending </span></td>
-                <td class="text-center">
-                  <img src="../../assets/img/icons/payments/paypal_logo-light.png" class="img-fluid" width="29" alt="paypalCard" data-app-light-img="icons/payments/paypal_logo-light.png" data-app-dark-img="icons/payments/paypal_logo-dark.png" />
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                      <a href="javascript:;" class="btn dropdown-toggle hide-arrow p-0" data-bs-toggle="dropdown"><i class="icon-base bx bx-dots-vertical-rounded icon-md text-body"></i></a>
-                      <div class="dropdown-menu dropdown-menu-end">
-                        <a href="javascript:void(0);" class="dropdown-item">Edit</a>
-                        <a href="javascript:;" class="dropdown-item">Duplicate</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="javascript:;" class="dropdown-item delete-record text-danger">Delete</a>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar-wrapper">
-                      <div class="avatar avatar-sm me-2">
-                        <img src="../../assets/img/avatars/14.png" alt="Avatar" class="rounded-circle" />
-                      </div>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <a href="pages-profile-user.html" class="text-heading text-truncate fw-medium">John Davidson</a>
-                      <small class="text-truncate text-body">jtum@upkesja.gov</small>
-                    </div>
-                  </div>
-                </td>
-                <td>$794.97</td>
-                <td><span class="badge bg-label-success"> Paid </span></td>
-                <td class="text-center">
-                  <img src="../../assets/img/icons/payments/master-light.png" class="img-fluid" width="29" alt="masterCard" data-app-light-img="icons/payments/master-light.png" data-app-dark-img="icons/payments/master-dark.png" />
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                      <a href="javascript:;" class="btn dropdown-toggle hide-arrow p-0" data-bs-toggle="dropdown"><i class="icon-base bx bx-dots-vertical-rounded icon-md text-body"></i></a>
-                      <div class="dropdown-menu dropdown-menu-end">
-                        <a href="javascript:void(0);" class="dropdown-item">Edit</a>
-                        <a href="javascript:;" class="dropdown-item">Duplicate</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="javascript:;" class="dropdown-item delete-record text-danger">Delete</a>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar-wrapper">
-                      <div class="avatar avatar-sm me-2">
-                        <span class="avatar-initial rounded-circle bg-label-warning">JH</span>
-                      </div>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <a href="pages-profile-user.html" class="text-heading text-truncate fw-medium">Jayden Harris</a>
-                      <small class="text-truncate text-body">wipare@tin.com</small>
-                    </div>
-                  </div>
-                </td>
-                <td>$19.49</td>
-                <td><span class="badge bg-label-success"> Paid </span></td>
-                <td class="text-center">
-                  <img src="../../assets/img/icons/payments/master-light.png" class="img-fluid" width="29" alt="masterCard" data-app-light-img="icons/payments/master-light.png" data-app-dark-img="icons/payments/master-dark.png" />
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                      <a href="javascript:;" class="btn dropdown-toggle hide-arrow p-0" data-bs-toggle="dropdown"><i class="icon-base bx bx-dots-vertical-rounded icon-md text-body"></i></a>
-                      <div class="dropdown-menu dropdown-menu-end">
-                        <a href="javascript:void(0);" class="dropdown-item">Edit</a>
-                        <a href="javascript:;" class="dropdown-item">Duplicate</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="javascript:;" class="dropdown-item delete-record text-danger">Delete</a>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex justify-content-start align-items-center">
-                    <div class="avatar-wrapper">
-                      <div class="avatar avatar-sm me-2">
-                        <img src="../../assets/img/avatars/8.png" alt="Avatar" class="rounded-circle" />
-                      </div>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <a href="pages-profile-user.html" class="text-heading text-truncate fw-medium">Rena Ferguson</a>
-                      <small class="text-truncate text-body">nur@kaomor.edu</small>
-                    </div>
-                  </div>
-                </td>
-                <td>$636.27</td>
-                <td><span class="badge bg-label-danger"> Failed </span></td>
-                <td class="text-center">
-                  <img src="../../assets/img/icons/payments/paypal_logo-light.png" class="img-fluid" width="29" alt="paypalCard" data-app-light-img="icons/payments/paypal_logo-light.png" data-app-dark-img="icons/payments/paypal_logo-dark.png" />
-                </td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="dropdown">
-                      <a href="javascript:;" class="btn dropdown-toggle hide-arrow p-0" data-bs-toggle="dropdown"><i class="icon-base bx bx-dots-vertical-rounded icon-md text-body"></i></a>
-                      <div class="dropdown-menu dropdown-menu-end">
-                        <a href="javascript:void(0);" class="dropdown-item">Edit</a>
-                        <a href="javascript:;" class="dropdown-item">Duplicate</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="javascript:;" class="dropdown-item delete-record text-danger">Delete</a>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <!--/ Customer Table -->
-  </div>
+            // Inicializar Select2 para moneda
+            $('.select2-moneda').select2({
+                placeholder: "Seleccionar moneda...",
+                allowClear: true
+            });
 
-        </div>
-        <!-- / Content -->
+            // Manejar cambio de universidad
+            $('#maestria-universidad').on('change', function() {
+                const selectedOption = $(this).find('option:selected');
+                const pais = selectedOption.data('pais') || '';
+                const ciudad = selectedOption.data('ciudad') || '';
 
-        
-     <!-- Vendors JS -->
-<script src="../assets/apex-charts/apexcharts.js"></script>
-<script src="../assets/js/dashboards-analytics.js"></script>
-<script src="../assets/js/funciones-dashboard.js"></script>
+                // Actualizar campos relacionados
+                $('#select-pais').val(pais);
+                $('#maestria-ciudad').val(ciudad);
 
-<?php include '../includes/footer.php'; ?>
+                // Forzar validación
+                $('#select-pais').trigger('change');
+                $('#maestria-ciudad').trigger('change');
+            });
+
+            // Poblar el dropdown de monedas
+            fetch('https://restcountries.com/v3.1/all')
+                .then(res => res.json())
+                .then(data => {
+                    const monedaSelect = document.getElementById('select-moneda');
+                    const monedasUnicas = new Set();
+
+                    monedaSelect.innerHTML = '<option value="">Seleccionar moneda...</option>';
+
+                    // Diccionario de monedas en español
+                    const monedasES = {
+                        USD: "Dólar estadounidense",
+                        EUR: "Euro",
+                        MXN: "Peso mexicano",
+                        ARS: "Peso argentino",
+                        COP: "Peso colombiano",
+                        PEN: "Sol peruano",
+                        CLP: "Peso chileno",
+                        BRL: "Real brasileño",
+                        UYU: "Peso uruguayo",
+                        PYG: "Guaraní paraguayo",
+                        BOB: "Boliviano",
+                        GTQ: "Quetzal guatemalteco",
+                        DOP: "Peso dominicano",
+                        CRC: "Colón costarricense",
+                        HNL: "Lempira hondureño",
+                        NIO: "Córdoba nicaragüense",
+                        SVC: "Colón salvadoreño",
+                        VES: "Bolívar venezolano",
+                        GBP: "Libra esterlina",
+                        JPY: "Yen japonés",
+                        CNY: "Yuan chino",
+                        KRW: "Won surcoreano",
+                        INR: "Rupia india",
+                        CAD: "Dólar canadiense",
+                        AUD: "Dólar australiano",
+                        CHF: "Franco suizo",
+                        SEK: "Corona sueca",
+                        NOK: "Corona noruega",
+                        DKK: "Corona danesa",
+                        RUB: "Rublo ruso",
+                        TRY: "Lira turca",
+                        ZAR: "Rand sudafricano"
+                    };
+
+                    // Procesar todos los países para obtener sus monedas
+                    data.forEach(pais => {
+                        const monedas = pais.currencies;
+                        if (monedas) {
+                            for (const codigo in monedas) {
+                                if (!monedasUnicas.has(codigo)) {
+                                    monedasUnicas.add(codigo);
+                                    const optionMoneda = document.createElement('option');
+                                    const nombreMoneda = monedasES[codigo] || monedas[codigo].name;
+                                    optionMoneda.value = codigo;
+                                    optionMoneda.textContent = `${codigo} - ${nombreMoneda}`;
+                                    monedaSelect.appendChild(optionMoneda);
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(err => {
+                    console.error('Error al cargar monedas:', err);
+                    const monedaSelect = document.getElementById('select-moneda');
+                    monedaSelect.innerHTML = '<option value="">Seleccionar moneda...</option>';
+                    const monedasDefault = {
+                        USD: "Dólar estadounidense",
+                        EUR: "Euro",
+                        MXN: "Peso mexicano"
+                    };
+                    for (const [codigo, nombre] of Object.entries(monedasDefault)) {
+                        const option = document.createElement('option');
+                        option.value = codigo;
+                        option.textContent = `${codigo} - ${nombre}`;
+                        monedaSelect.appendChild(option);
+                    }
+                });
+
+            // Validación del formulario
+            const form = document.getElementById('formUniversidad');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!form.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        form.classList.add('was-validated');
+                    } else {
+                        console.log('Formulario válido, enviando datos...');
+                        // Aquí puedes agregar lógica para procesar el formulario
+                    }
+                });
+            }
+        });
+    </script>
