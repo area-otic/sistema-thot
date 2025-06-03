@@ -70,7 +70,7 @@ include '../includes/header.php';
             <h5 class="card-title mb-0">Lista de Maestrías</h5> <!-- Título a la izquierda -->
             <div>
               <a class="btn btn-secondary" href='importar_pro.php?origen=maestria'>Pro-Importar</a>
-              <a class="btn btn-secondary" href='importar_programas.php?origen=maestria'>Importar</a>
+              <!--<a class="btn btn-secondary" href='importar_programas.php?origen=maestria'>Importar</a>-->
               <a class="btn btn-primary" href='registrar_maestria.php'>Registrar Maestría</a>  
             </div>
         </div>
@@ -253,7 +253,7 @@ include '../includes/header.php';
                 { 
                     targets: 5, // Columna de Acciones
                     orderable: false,
-                    width: '8%'
+                    width: '12%'
                 },
                 { 
                     targets: [0, 4], // ID y Estado

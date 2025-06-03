@@ -33,35 +33,44 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
     
     // Obtener datos de la maestría
     try {
-        $stmt = $conn->prepare("SELECT * FROM data_programas WHERE id = :id");
+        $stmt = $conn->prepare("SELECT 
+            p.*, 
+            i.nombre as universidad_nombre,
+            i.pais as universidad_pais,
+            i.ciudad as universidad_ciudad
+            FROM data_programas p
+            LEFT JOIN data_instituciones i ON p.id_universidad = i.id
+            WHERE p.id = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
+    
         
         if($stmt->rowCount() > 0) {
-            $doctorado = $stmt->fetch(PDO::FETCH_ASSOC);
+            $maestria = $stmt->fetch(PDO::FETCH_ASSOC);
             
             // Asignar valores a las variables
-            $titulo = $doctorado['titulo'];
-            $descripcion = $doctorado['descripcion'];
-            $tipo = $doctorado['tipo'];
-            $categoria = $doctorado['categoria'];
-            $universidad = $doctorado['universidad'];
-            $pais = $doctorado['pais'];
-            $modalidad = $doctorado['modalidad'];
-            $duracion = $doctorado['duracion'];
-            $imagen_url = $doctorado['imagen_url'];
-            $objetivos = $doctorado['objetivos'];
-            $plan_estudios = $doctorado['plan_estudios'];
-            $url = $doctorado['url'];
-            $estado_programa = $doctorado['estado_programa'];
-            $precio_monto = $doctorado['precio_monto'];
-            $precio_moneda = $doctorado['precio_moneda'];
-            $idioma = $doctorado['idioma'];
-            $fecha_admision = $doctorado['fecha_admision'];
-            $titulo_grado = $doctorado['titulo_grado'];
-            $ciudad_universidad = $doctorado['ciudad_universidad'];
-            $docentes = $doctorado['docentes'];
-            $url_brochure = $doctorado['url_brochure'];
+            $titulo = $maestria['titulo'];
+            $descripcion = $maestria['descripcion'];
+            $tipo = $maestria['tipo'];
+            $categoria = $maestria['categoria'];
+            $universidad = $maestria['id_universidad']; // ID de la universidad
+            $universidad_nombre = $maestria['universidad_nombre']; // Nombre de la universidad
+            $pais = $maestria['pais'];
+            $modalidad = $maestria['modalidad'];
+            $duracion = $maestria['duracion'];
+            $imagen_url = $maestria['imagen_url'];
+            $objetivos = $maestria['objetivos'];
+            $plan_estudios = $maestria['plan_estudios'];
+            $url = $maestria['url'];
+            $estado_programa = $maestria['estado_programa'];
+            $precio_monto = $maestria['precio_monto'];
+            $precio_moneda = $maestria['precio_moneda'];
+            $idioma = $maestria['idioma'];
+            $fecha_admision = $maestria['fecha_admision'];
+            $titulo_grado = $maestria['titulo_grado'];
+            $ciudad_universidad = $maestria['ciudad_universidad'];
+            $docentes = $maestria['docentes'];
+            $url_brochure = $maestria['url_brochure'];
             
         } else {
             header("Location: gestion_doctorado.php?error=Doctorado no encontrado.");
@@ -80,8 +89,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $descripcion = trim($_POST['doctorado-descripcion']);
     $tipo = trim($_POST['doctorado-tipo']);
     $categoria = trim($_POST['doctorado-categoria']);
+
     $universidad = trim($_POST['doctorado-universidad']);
     $pais = trim($_POST['doctorado-pais']);
+
+    $id_universidad = trim($_POST['maestria-id_universidad']);
+    $universidad_nombre = trim($_POST['universidad-nombre']); // Campo oculto
+    $ciudad_universidad = trim($_POST['maestria-ciudad']);
+
     $modalidad = trim($_POST['doctorado-modalidad']);
     $duracion = trim($_POST['doctorado-duracion']);
     $imagen_url = trim($_POST['doctorado-imagen']);
@@ -94,7 +109,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $idioma = trim($_POST['doctorado-idioma']);
     $fecha_admision = trim($_POST['doctorado-fecha-admision']);
     $titulo_grado = trim($_POST['doctorado-titulo-grado']);
-    $ciudad_universidad = trim($_POST['doctorado-ciudad-universidad']);
     $docentes = trim($_POST['doctorado-docentes']);
     $url_brochure = trim($_POST['doctorado-url-brochure']);
     $user_encargado = $_SESSION['username']; // Obtener el usuario de la sesión
@@ -248,11 +262,8 @@ include '../includes/header.php';
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Tipo*</label>
-                            <select class="form-select" name="doctorado-tipo" required>
-                                <option value="">Seleccionar...</option>
-                                <option value="Maestría" <?= ($tipo == 'Maestría') ? 'selected' : '' ?>>Maestría</option>
+                            <select class="form-select" name="doctorado-tipo" required >
                                 <option value="Doctorado" <?= ($tipo == 'Doctorado') ? 'selected' : '' ?>>Doctorado</option>
-                                <option value="Diplomado" <?= ($tipo == 'Diplomado') ? 'selected' : '' ?>>Diplomado</option>
                                 
                             </select>
                             <div class="invalid-feedback">Por favor seleccione el tipo</div>
@@ -287,30 +298,38 @@ include '../includes/header.php';
                         <!-- En la sección del formulario, modificar el campo de universidad: -->
                         <div class="col-md-6">
                             <label class="form-label">Universidad*</label>
-                            <select class="form-select select2-universidad" id="doctorado-universidad" name="doctorado-universidad" required>
+                            <select class="form-select select2-universidad" id="doctorado-universidad" name="maestria-id_universidad" required>
                                 <option value="">Seleccionar universidad...</option>
                                 <?php foreach($universidades as $uni): ?>
-                                    <option value="<?= htmlspecialchars($uni['nombre']) ?>" 
-                                        <?= ($universidad == $uni['nombre']) ? 'selected' : '' ?>
-                                        data-pais="<?= htmlspecialchars($uni['pais']) ?>"
-                                        data-ciudad="<?= htmlspecialchars($uni['ciudad']) ?>">
-                                        <?= htmlspecialchars($uni['nombre']) ?> (<?= htmlspecialchars($uni['ciudad']) ?>, <?= htmlspecialchars($uni['pais']) ?>)
+                                    <option 
+                                        value="<?php echo htmlspecialchars($uni['id']); ?>" 
+                                        data-nombre="<?php echo htmlspecialchars($uni['nombre']); ?>"
+                                        data-pais="<?php echo htmlspecialchars($uni['pais']); ?>"
+                                        data-ciudad="<?php echo htmlspecialchars($uni['ciudad']); ?>"
+                                        <?= ($universidad == $uni['id']) ? 'selected' : '' ?>
+                                    >
+                                        <?php echo htmlspecialchars($uni['nombre']); ?> (<?php echo htmlspecialchars($uni['ciudad']); ?>, <?php echo htmlspecialchars($uni['pais']); ?>)
                                     </option>
                                 <?php endforeach; ?>
                             </select>
                             <div class="invalid-feedback">Por favor seleccione una universidad</div>
                         </div>
-                       
+
+                        <!-- País (solo lectura) -->
                         <div class="col-md-3">
                             <label class="form-label">País*</label>
-                            <select class="form-select select2" id="select-pais" name="doctorado-pais" required>
-                                <option value="">Cargando países...</option>
-                            </select>
+                            <input type="text" class="form-control" id="doctorado-pais" name="doctorado-pais" readonly required>
+                            <div class="invalid-feedback">El país es obligatorio</div>
                         </div>
+                        <input type="hidden" id="universidad-nombre" name="universidad-nombre" value="">
+
+                        <!-- Ciudad (solo lectura) -->
                         <div class="col-md-3">
                             <label class="form-label">Ciudad*</label>
-                            <input type="text" class="form-control" name="doctorado-ciudad-universidad" value="<?= htmlspecialchars($ciudad_universidad) ?>" required>
-                        </div>
+                            <input type="text" class="form-control" id="doctorado-ciudad-universidad" name="doctorado-ciudad-universidad" readonly required>
+                            <div class="invalid-feedback">La ciudad es obligatoria</div>
+                        </div>                       
+                        
                     </div>
                 </div>
                 
@@ -442,23 +461,51 @@ include '../includes/header.php';
    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-    // Validación de formulario
-    document.addEventListener('DOMContentLoaded', function() {
+    $(document).ready(function() {
+          $('.select2-universidad').select2({
+            allowClear: true,  // <- Esta opción habilita el botón de limpieza
+            placeholder: "Seleccionar universidad..."  // Necesario para que funcione allowClear
+        });
+
+        // Inicializar Select2 para moneda
+        $('.select2-moneda').select2({
+            placeholder: "Seleccionar moneda...",
+            allowClear: true
+        });
+
+
+        // Si estamos en modo edición, cargar los datos de la universidad
+        <?php if($isEdit && !empty($universidad)): ?>
+            // Esperar a que Select2 esté listo
+            setTimeout(function() {
+                // Seleccionar la universidad en el dropdown
+                $('#maestria-universidad').val('<?php echo $universidad; ?>').trigger('change');
+                
+                // Forzar la actualización de país y ciudad (por si acaso)
+                const selectedOption = $('#maestria-universidad').find('option:selected');
+                $('#select-pais').val(selectedOption.data('pais') || '<?php echo $pais; ?>');
+                $('#maestria-ciudad').val(selectedOption.data('ciudad') || '<?php echo $ciudad_universidad; ?>');
+                $('#universidad-nombre').val(selectedOption.data('nombre') || '');
+            }, 100);
+        <?php endif; ?>
+
+        // Manejo de cambio de universidad
+        $('#maestria-universidad').on('change', function() {
+            const selectedOption = $(this).find('option:selected');
+            $('#select-pais').val(selectedOption.data('pais') || '');
+            $('#maestria-ciudad').val(selectedOption.data('ciudad') || '');
+            $('#universidad-nombre').val(selectedOption.data('nombre') || '');
+        });
+
+         // Obtener la moneda guardada (si estamos en edición)
+        const monedaGuardada = '<?php echo $precio_moneda; ?>';
+        // Poblar el dropdown de monedas
         fetch('https://restcountries.com/v3.1/all')
         .then(res => res.json())
         .then(data => {
-            const paisSelect = document.getElementById('select-pais');
             const monedaSelect = document.getElementById('select-moneda');
-            const monedasUnicas = new Set();
+            const monedasUnicas = [];
 
-            // Ordenar países por nombre en español
-            const paisesOrdenados = data.sort((a, b) => {
-                const nombreA = a.translations?.spa?.common || a.name.common;
-                const nombreB = b.translations?.spa?.common || b.name.common;
-                return nombreA.localeCompare(nombreB, 'es');
-            });
-
-            paisSelect.innerHTML = '<option value="">Seleccionar país...</option>';
             monedaSelect.innerHTML = '<option value="">Seleccionar moneda...</option>';
 
             // Diccionario de monedas en español
@@ -495,46 +542,99 @@ include '../includes/header.php';
                 RUB: "Rublo ruso",
                 TRY: "Lira turca",
                 ZAR: "Rand sudafricano"
-                // Agrega más si lo necesitas
             };
 
-            paisesOrdenados.forEach(pais => {
-                const nombrePais = pais.translations?.spa?.common || pais.name.common;
+            // Recolectar todas las monedas únicas en un array
+            data.forEach(pais => {
                 const monedas = pais.currencies;
-
-                // País
-                const optionPais = document.createElement('option');
-                optionPais.value = nombrePais;
-                optionPais.textContent = nombrePais;
-                paisSelect.appendChild(optionPais);
-
-                // Monedas únicas
                 if (monedas) {
                     for (const codigo in monedas) {
-                        if (!monedasUnicas.has(codigo)) {
-                            monedasUnicas.add(codigo);
-                            const optionMoneda = document.createElement('option');
+                        if (!monedasUnicas.some(item => item.codigo === codigo)) {
                             const nombreMoneda = monedasES[codigo] || monedas[codigo].name;
-                            optionMoneda.value = codigo;
-                            optionMoneda.textContent = `${codigo} - ${nombreMoneda}`;
-                            monedaSelect.appendChild(optionMoneda);
+                            monedasUnicas.push({ codigo, nombre: nombreMoneda });
                         }
                     }
                 }
             });
+
+            // Ordenar alfabéticamente por nombre de moneda
+            monedasUnicas.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+            monedasUnicas.forEach(moneda => {
+                const optionMoneda = new Option(
+                    `${moneda.codigo} - ${moneda.nombre}`,
+                    moneda.codigo,
+                    false,  // no seleccionado por defecto
+                    moneda.codigo === monedaGuardada  // seleccionar si coincide
+                );
+                monedaSelect.add(optionMoneda);
+            });
+
+            // Y justo después agrega:
+            if (monedaGuardada) {
+                $('#select-moneda').val(monedaGuardada).trigger('change');
+            }
+
         })
         .catch(err => {
-            console.error('Error al cargar países/monedas', err);
+            console.error('Error al cargar monedas:', err);
+            const monedaSelect = document.getElementById('select-moneda');
+            monedaSelect.innerHTML = '<option value="">Seleccionar moneda...</option>';
+            const monedasDefault = {
+                USD: "Dólar estadounidense",
+                EUR: "Euro",
+                MXN: "Peso mexicano"
+            };
+            // Ordenar las monedas por defecto alfabéticamente
+            const monedasDefaultArray = Object.entries(monedasDefault)
+                .map(([codigo, nombre]) => ({ codigo, nombre }))
+                .sort((a, b) => a.nombre.localeCompare(b.nombre));
+            
+            monedasDefaultArray.forEach(moneda => {
+                const option = document.createElement('option');
+                option.value = moneda.codigo;
+                option.textContent = `${moneda.codigo} - ${moneda.nombre}`;
+                monedaSelect.appendChild(option);
+            });
         });
 
-        const form = document.getElementById('formDoctorado');
-        
+        // Configurar validación para Select2
+        $('.select2-universidad').on('change', function() {
+            $(this).valid();
+        });
+
+         // Validación del formulario
+        const form = document.getElementById('formMaestria');
         if (form) {
+            // Configurar validación al enviar
             form.addEventListener('submit', function(e) {
                 if (!form.checkValidity()) {
                     e.preventDefault();
                     e.stopPropagation();
-                    form.classList.add('was-validated');
+                    
+                    // Agregar clase de validación a todo el formulario
+                    $(form).addClass('was-validated');
+                    
+                    // Forzar validación de Select2
+                    $('.select2-universidad').each(function() {
+                        if (!$(this).val()) {
+                            $(this).siblings('.select2-container').addClass('is-invalid');
+                        } else {
+                            $(this).siblings('.select2-container').removeClass('is-invalid');
+                        }
+                    });
+                } else {
+                    console.log('Formulario válido, enviando datos...');
+                }
+            }, false);
+            
+            // Configurar validación en tiempo real para campos de texto
+            $('input[required], textarea[required]').on('input', function() {
+                $(this).removeClass('is-invalid');
+                if (this.checkValidity()) {
+                    $(this).removeClass('is-invalid').addClass('is-valid');
+                } else {
+                    $(this).removeClass('is-valid').addClass('is-invalid');
                 }
             });
         }

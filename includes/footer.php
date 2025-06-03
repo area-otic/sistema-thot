@@ -27,8 +27,8 @@
     <!-- Core JS -->
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <!-- build:js assets/vendor/js/core.js
-    <script src="../assets/js/jquery.js"></script> -->
+    <!-- build:js assets/vendor/js/core.js-->
+    <script src="../assets/js/jquery.js"></script> 
     <script src="../assets/js/popper.js"></script>
     <script src="../assets/js/bootstrap.js"></script>
     <script src="../assets/js/perfect-scrollbar.js"></script>
