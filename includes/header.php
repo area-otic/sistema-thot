@@ -115,6 +115,13 @@
 
             <!-- Misc -->
             <li class="menu-header small text-uppercase"><span class="menu-header-text">configuracion</span></li>
+            
+            <li class="menu-item">
+              <a href="../pages/gestion_categorias.php" class="menu-link">
+                <i class="menu-icon tf-icons bx bxs-user"></i>
+                <div data-i18n="Support">Categorias</div>
+              </a>
+            </li>
             <li class="menu-item">
               <a href="../pages/gestion_usuarios.php" class="menu-link">
                 <i class="menu-icon tf-icons bx bxs-user"></i>

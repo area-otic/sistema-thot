@@ -4,7 +4,7 @@ include '../control/check_session.php';
 
 // Obtener categorías de la base de datos
 try {
-    $stmtCategorias = $conn->query("SELECT id, nombre FROM categorias_programas ORDER BY nombre");
+    $stmtCategorias = $conn->query("SELECT id, nombre FROM data_categorias_programas ORDER BY nombre");
     $categorias = $stmtCategorias->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
     $categorias = [];
@@ -17,12 +17,12 @@ try {
     $universidades = $stmtUniversidades->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
     $universidades = [];
-    error_log("Error al obtener universidades: " . $e->getMessage());
+    $error = "Error al obtener universidades: " . $e->getMessage();
 }
 
 // Inicializar variables
 $titulo = $descripcion = $tipo = $categoria = $universidad = $pais = $modalidad = $duracion = $imagen_url = $objetivos = $plan_estudios = $url = $estado_programa = '';
-$precio_monto = $precio_moneda = $idioma = $fecha_admision = $titulo_grado = $ciudad_universidad = $docentes = $url_brochure = '';
+$precio_monto = $precio_moneda = $idioma = $fecha_admision = $titulo_grado = $ciudad_universidad = $requisitos = $url_brochure = '';
 $id = null;
 $isEdit = false;
 
@@ -31,7 +31,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
     $id = $_GET['id'];
     $isEdit = true;
     
-    // Obtener datos de la maestría
+    // Obtener datos de el doctorado
     try {
         $stmt = $conn->prepare("SELECT 
             p.*, 
@@ -46,34 +46,34 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
     
         
         if($stmt->rowCount() > 0) {
-            $maestria = $stmt->fetch(PDO::FETCH_ASSOC);
+            $doctorado = $stmt->fetch(PDO::FETCH_ASSOC);
             
             // Asignar valores a las variables
-            $titulo = $maestria['titulo'];
-            $descripcion = $maestria['descripcion'];
-            $tipo = $maestria['tipo'];
-            $categoria = $maestria['categoria'];
-            $universidad = $maestria['id_universidad']; // ID de la universidad
-            $universidad_nombre = $maestria['universidad_nombre']; // Nombre de la universidad
-            $pais = $maestria['pais'];
-            $modalidad = $maestria['modalidad'];
-            $duracion = $maestria['duracion'];
-            $imagen_url = $maestria['imagen_url'];
-            $objetivos = $maestria['objetivos'];
-            $plan_estudios = $maestria['plan_estudios'];
-            $url = $maestria['url'];
-            $estado_programa = $maestria['estado_programa'];
-            $precio_monto = $maestria['precio_monto'];
-            $precio_moneda = $maestria['precio_moneda'];
-            $idioma = $maestria['idioma'];
-            $fecha_admision = $maestria['fecha_admision'];
-            $titulo_grado = $maestria['titulo_grado'];
-            $ciudad_universidad = $maestria['ciudad_universidad'];
-            $docentes = $maestria['docentes'];
-            $url_brochure = $maestria['url_brochure'];
+            $titulo = $doctorado['titulo'];
+            $descripcion = $doctorado['descripcion'];
+            $tipo = $doctorado['tipo'];
+            $categoria = $doctorado['categoria'];
+            $universidad = $doctorado['id_universidad']; // ID de la universidad
+            $universidad_nombre = $doctorado['universidad_nombre']; // Nombre de la universidad
+            $pais = $doctorado['pais'];
+            $modalidad = $doctorado['modalidad'];
+            $duracion = $doctorado['duracion'];
+            $imagen_url = $doctorado['imagen_url'];
+            $objetivos = $doctorado['objetivos'];
+            $plan_estudios = $doctorado['plan_estudios'];
+            $url = $doctorado['url'];
+            $estado_programa = $doctorado['estado_programa'];
+            $precio_monto = $doctorado['precio_monto'];
+            $precio_moneda = $doctorado['precio_moneda'];
+            $idioma = $doctorado['idioma'];
+            $fecha_admision = $doctorado['fecha_admision'];
+            $titulo_grado = $doctorado['titulo_grado'];
+            $ciudad_universidad = $doctorado['ciudad_universidad'];
+            $requisitos = $doctorado['requisitos'];
+            $url_brochure = $doctorado['url_brochure'];
             
         } else {
-            header("Location: gestion_doctorado.php?error=Doctorado no encontrado.");
+            header("Location: gestion_doctorado.php?error=Doctorado no encontrado");
             exit();
         }
     } catch(PDOException $e) {
@@ -90,12 +90,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $tipo = trim($_POST['doctorado-tipo']);
     $categoria = trim($_POST['doctorado-categoria']);
 
-    $universidad = trim($_POST['doctorado-universidad']);
-    $pais = trim($_POST['doctorado-pais']);
-
-    $id_universidad = trim($_POST['maestria-id_universidad']);
+    $id_universidad = trim($_POST['doctorado-id_universidad']);
     $universidad_nombre = trim($_POST['universidad-nombre']); // Campo oculto
-    $ciudad_universidad = trim($_POST['maestria-ciudad']);
+    $pais = trim($_POST['doctorado-pais']);
+    $ciudad_universidad = trim($_POST['doctorado-ciudad']);
 
     $modalidad = trim($_POST['doctorado-modalidad']);
     $duracion = trim($_POST['doctorado-duracion']);
@@ -109,7 +107,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $idioma = trim($_POST['doctorado-idioma']);
     $fecha_admision = trim($_POST['doctorado-fecha-admision']);
     $titulo_grado = trim($_POST['doctorado-titulo-grado']);
-    $docentes = trim($_POST['doctorado-docentes']);
+    $requisitos = trim($_POST['doctorado-requisitos']);
     $url_brochure = trim($_POST['doctorado-url-brochure']);
     $user_encargado = $_SESSION['username']; // Obtener el usuario de la sesión
     
@@ -126,8 +124,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                     descripcion = :descripcion,
                     tipo = :tipo,
                     categoria = :categoria,
+                    
+                    id_universidad = :id_universidad,
                     universidad = :universidad,
                     pais = :pais,
+                    ciudad_universidad = :ciudad_universidad,
+                    
                     modalidad = :modalidad,
                     duracion = :duracion,
                     imagen_url = :imagen_url,
@@ -140,8 +142,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                     idioma = :idioma,
                     fecha_admision = :fecha_admision,
                     titulo_grado = :titulo_grado,
-                    ciudad_universidad = :ciudad_universidad,
-                    docentes = :docentes,
+                    requisitos = :requisitos,
                     url_brochure = :url_brochure,
                     user_encargado = :user_encargado,
                     fecha_modificada = NOW()
@@ -151,16 +152,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 // Insertar nuevo registro
                 $stmt = $conn->prepare("INSERT INTO data_programas (
-                    titulo, descripcion, tipo, categoria, universidad, pais, 
+                    titulo, descripcion, tipo, categoria, id_universidad, universidad, pais, 
                     modalidad, duracion, imagen_url, objetivos, plan_estudios, 
                     url, estado_programa, precio_monto, precio_moneda, idioma,
-                    fecha_admision, titulo_grado, ciudad_universidad, docentes,
+                    fecha_admision, titulo_grado, ciudad_universidad, requisitos,
                     url_brochure, user_encargado, fecha_creacion, fecha_modificada
                 ) VALUES (
-                    :titulo, :descripcion, :tipo, :categoria, :universidad, :pais,
+                    :titulo, :descripcion, :tipo, :categoria, :id_universidad, :universidad, :pais,
                     :modalidad, :duracion, :imagen_url, :objetivos, :plan_estudios,
                     :url, :estado_programa, :precio_monto, :precio_moneda, :idioma,
-                    :fecha_admision, :titulo_grado, :ciudad_universidad, :docentes,
+                    :fecha_admision, :titulo_grado, :ciudad_universidad, :requisitos,
                     :url_brochure, :user_encargado, NOW(), NOW()
                 )");
             }
@@ -170,8 +171,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':descripcion', $descripcion);
             $stmt->bindParam(':tipo', $tipo);
             $stmt->bindParam(':categoria', $categoria);
-            $stmt->bindParam(':universidad', $universidad);
+
+            $stmt->bindParam(':id_universidad', $id_universidad);
+            $stmt->bindParam(':universidad', $universidad_nombre);
             $stmt->bindParam(':pais', $pais);
+            $stmt->bindParam(':ciudad_universidad', $ciudad_universidad);
+
             $stmt->bindParam(':modalidad', $modalidad);
             $stmt->bindParam(':duracion', $duracion);
             $stmt->bindParam(':imagen_url', $imagen_url);
@@ -184,8 +189,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':idioma', $idioma);
             $stmt->bindParam(':fecha_admision', $fecha_admision);
             $stmt->bindParam(':titulo_grado', $titulo_grado);
-            $stmt->bindParam(':ciudad_universidad', $ciudad_universidad);
-            $stmt->bindParam(':docentes', $docentes);
+            $stmt->bindParam(':requisitos', $requisitos);
             $stmt->bindParam(':url_brochure', $url_brochure);
             $stmt->bindParam(':user_encargado', $user_encargado);
             
@@ -195,7 +199,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                 header("Location: gestion_doctorado.php?success=" . urlencode($msg));
                 exit();
             } else {
-                $error = $isEdit ? "Error al actualizar la maestría" : "Error al registrar el doctorado";
+                $error = $isEdit ? "Error al actualizar el Doctorado" : "Error al registrar el doctorado";
                 header("Location: registrar_doctorado.php?id=$id&error=" . urlencode($error));
                 exit();
             }
@@ -211,16 +215,93 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 }
-
 // Incluir el header
 include '../includes/header.php';
 ?>
 
+<style>
+    /* Contenedor principal - Ajustes responsivos */
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection {
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 4px !important;
+        padding: 0.475rem 0.75rem !important;
+        height: auto !important;
+        font-size: 14px !important;
+        background-color: #fff !important;
+        width: 100% !important;
+    }
+
+    /* Dropdown responsivo */
+    .select2-container--default .select2-dropdown {
+        border: 1px solid #d9d9d9 !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        min-width: 70% !important;
+        width: auto !important;
+        max-width: 70% !important;
+    }
+
+    /* Ajustes para pantallas pequeñas */
+    @media (max-width: 768px) {
+        .select2-container--default .select2-dropdown {
+            width: 100% !important;
+            left: 0 !important;
+        }
+        
+        .col-md-6 {
+            width: 100% !important;
+        }
+    }
+
+    /* Mantén tus otros estilos existentes */
+    .select2-container--default .select2-results__option {
+        padding: 8px 12px !important;
+        white-space: normal !important; /* Permite que el texto se ajuste */
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #333 !important;
+        line-height: 1.5 !important;
+        word-wrap: break-word !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 100% !important;
+        top: 0 !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted {
+        background-color: #f8f9fa !important;
+        color: #333 !important;
+    }
+
+    .select2-container--default .select2-results__option--selected {
+        background-color: #e9ecef !important;
+        color: #333 !important;
+    }
+    /* Estilo para el botón de limpieza */
+    .select2-container--default .select2-selection--single .select2-selection__clear {
+        color: #999;
+        font-size: 1.2em;
+        margin-right: 5px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__clear:hover {
+        color: #333;
+    }
+</style>
+
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="fw-bold py-3 mb-4">
         <span class="text-muted fw-light">
-            Doctorado / 
-            <a href="../pages/gestion_doctorado.php" class=" text-primary text-decoration-none">Registros</a> / 
+            Doctorados / 
+            <a href="../pages/gestion_doctorados.php" class=" text-primary text-decoration-none">Registros</a> / 
         </span>
         <?php echo $isEdit ? 'Editar Doctorado' : 'Agregar Nueva Doctorado'; ?>
     </h4>
@@ -234,9 +315,9 @@ include '../includes/header.php';
     <?php endif; ?>
 
     <div class="card">
-        <h5 class="card-header">Información del Doctorado</h5>
+        <h5 class="card-header">Información de Doctorado</h5>
         <div class="card-body">
-            <form class="needs-validation" id="formDoctorado" method="POST" novalidate>
+            <form class="needs-validation" id="formdoctorado" method="POST" novalidate>
                 <?php if($isEdit): ?>
                 <input type="hidden" name="id" value="<?php echo $id; ?>">
                 <?php endif; ?>
@@ -262,7 +343,7 @@ include '../includes/header.php';
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Tipo*</label>
-                            <select class="form-select" name="doctorado-tipo" required >
+                            <select class="form-select" name="doctorado-tipo" required readonly> 
                                 <option value="Doctorado" <?= ($tipo == 'Doctorado') ? 'selected' : '' ?>>Doctorado</option>
                                 
                             </select>
@@ -295,10 +376,10 @@ include '../includes/header.php';
                 <div class="mb-4">
                     <h6 class="mb-3 text-primary"><i class="bx bx-building-house me-2"></i>Institución y Ubicación</h6>
                     <div class="row g-3">
-                        <!-- En la sección del formulario, modificar el campo de universidad: -->
+                        <!-- Universidad -->
                         <div class="col-md-6">
                             <label class="form-label">Universidad*</label>
-                            <select class="form-select select2-universidad" id="doctorado-universidad" name="maestria-id_universidad" required>
+                            <select class="form-select select2-universidad" id="doctorado-universidad" name="doctorado-id_universidad" required>
                                 <option value="">Seleccionar universidad...</option>
                                 <?php foreach($universidades as $uni): ?>
                                     <option 
@@ -318,7 +399,7 @@ include '../includes/header.php';
                         <!-- País (solo lectura) -->
                         <div class="col-md-3">
                             <label class="form-label">País*</label>
-                            <input type="text" class="form-control" id="doctorado-pais" name="doctorado-pais" readonly required>
+                            <input type="text" class="form-control" id="select-pais" name="doctorado-pais" readonly required>
                             <div class="invalid-feedback">El país es obligatorio</div>
                         </div>
                         <input type="hidden" id="universidad-nombre" name="universidad-nombre" value="">
@@ -326,10 +407,9 @@ include '../includes/header.php';
                         <!-- Ciudad (solo lectura) -->
                         <div class="col-md-3">
                             <label class="form-label">Ciudad*</label>
-                            <input type="text" class="form-control" id="doctorado-ciudad-universidad" name="doctorado-ciudad-universidad" readonly required>
+                            <input type="text" class="form-control" id="doctorado-ciudad" name="doctorado-ciudad" readonly required>
                             <div class="invalid-feedback">La ciudad es obligatoria</div>
-                        </div>                       
-                        
+                        </div>
                     </div>
                 </div>
                 
@@ -342,12 +422,12 @@ include '../includes/header.php';
                             <input type="text" class="form-control" placeholder="Ej: 2 años, 6 meses"  name="doctorado-duracion" value="<?= htmlspecialchars($duracion) ?>" required>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Fecha Admisión*</label>
-                            <input type="date" class="form-control" name="doctorado-fecha-admision" value="<?= htmlspecialchars($fecha_admision) ?>" required>
+                            <label class="form-label">Fecha Admisión</label>
+                            <input type="date" class="form-control" name="doctorado-fecha-admision" value="<?= htmlspecialchars($fecha_admision) ?>" >
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Idioma*</label>
-                            <select class="form-select" name="doctorado-idioma" required>
+                            <label class="form-label">Idioma</label>
+                            <select class="form-select" name="doctorado-idioma" >
                                 <option value="">Seleccionar...</option>
                                 <option value="Español" <?= ($idioma == 'Español') ? 'selected' : '' ?>>Español</option>
                                 <option value="Inglés" <?= ($idioma == 'Inglés') ? 'selected' : '' ?>>Inglés</option>
@@ -362,7 +442,7 @@ include '../includes/header.php';
                             <label class="form-label">Precio</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <input type="number" class="form-control" name="doctorado-precio-monto" value="<?= htmlspecialchars($precio_monto) ?>">                                
+                                <input type="number" class="form-control" name="doctorado-precio-monto" value="<?= htmlspecialchars($precio_monto) ?>">
                                 <select class="form-select" id="select-moneda" name="doctorado-precio-moneda" style="max-width: 80%;">
                                     <option value="">Cargando monedas...</option>
                                 </select>
@@ -399,23 +479,23 @@ include '../includes/header.php';
                 <!-- SECCIÓN 6: CONTENIDO ACADÉMICO -->
                 <div class="mb-4">
                     <h6 class="mb-3 text-primary"><i class="bx bx-book-content me-2"></i>Contenido Académico</h6>
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label">Docentes</label>
-                            <textarea class="form-control" name="doctorado-docentes" rows="2"><?= htmlspecialchars($docentes) ?></textarea>
-                            <small class="text-muted">Separar nombres con comas</small>
-                        </div>
+                    <div class="row g-3">                        
                         <div class="col-12">
                             <label class="form-label">Descripción*</label>
                             <textarea class="form-control" name="doctorado-descripcion" rows="3" required><?= htmlspecialchars($descripcion) ?></textarea>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Objetivos*</label>
-                            <textarea class="form-control" name="doctorado-objetivos" rows="3" required><?= htmlspecialchars($objetivos) ?></textarea>
+                            <textarea class="form-control" name="doctorado-objetivos" rows="3" ><?= htmlspecialchars($objetivos) ?></textarea>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Plan de Estudios*</label>
-                            <textarea class="form-control" name="doctorado-plan" rows="5" required><?= htmlspecialchars($plan_estudios) ?></textarea>
+                            <textarea class="form-control" name="doctorado-plan" rows="5" ><?= htmlspecialchars($plan_estudios) ?></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">requisitos</label>
+                            <textarea class="form-control" name="doctorado-requisitos" rows="2"><?= htmlspecialchars($requisitos) ?></textarea>
+                            <small class="text-muted">Separar nombres con comas</small>
                         </div>
                     </div>
                 </div>
@@ -439,26 +519,25 @@ include '../includes/header.php';
                         </div>
                     </div>
                 </div>
-                
-                <!-- BOTONES DE ACCIÓN -->
+                 <!-- BOTONES DE ACCIÓN -->
                 <div class="d-flex justify-content-between mt-4">
                     <a href="gestion_doctorado.php" class="btn btn-outline-secondary">
                         <i class="bx bx-arrow-back me-1"></i> Cancelar
                     </a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bx bx-save me-1"></i> <?= $isEdit ? 'Actualizar Maestría' : 'Guardar Maestría' ?>
+                        <i class="bx bx-save me-1"></i> <?= $isEdit ? 'Actualizar Doctorado' : 'Guardar Doctorado' ?>
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
 </div>
-   <!-- jQuery -->
-   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-   <!-- Select2 para búsqueda de países -->
-   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <?php include '../includes/footer.php'; ?>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
     $(document).ready(function() {
@@ -479,21 +558,21 @@ include '../includes/header.php';
             // Esperar a que Select2 esté listo
             setTimeout(function() {
                 // Seleccionar la universidad en el dropdown
-                $('#maestria-universidad').val('<?php echo $universidad; ?>').trigger('change');
+                $('#doctorado-universidad').val('<?php echo $universidad; ?>').trigger('change');
                 
                 // Forzar la actualización de país y ciudad (por si acaso)
-                const selectedOption = $('#maestria-universidad').find('option:selected');
+                const selectedOption = $('#doctorado-universidad').find('option:selected');
                 $('#select-pais').val(selectedOption.data('pais') || '<?php echo $pais; ?>');
-                $('#maestria-ciudad').val(selectedOption.data('ciudad') || '<?php echo $ciudad_universidad; ?>');
+                $('#doctorado-ciudad').val(selectedOption.data('ciudad') || '<?php echo $ciudad_universidad; ?>');
                 $('#universidad-nombre').val(selectedOption.data('nombre') || '');
             }, 100);
         <?php endif; ?>
 
         // Manejo de cambio de universidad
-        $('#maestria-universidad').on('change', function() {
+        $('#doctorado-universidad').on('change', function() {
             const selectedOption = $(this).find('option:selected');
             $('#select-pais').val(selectedOption.data('pais') || '');
-            $('#maestria-ciudad').val(selectedOption.data('ciudad') || '');
+            $('#doctorado-ciudad').val(selectedOption.data('ciudad') || '');
             $('#universidad-nombre').val(selectedOption.data('nombre') || '');
         });
 
@@ -604,7 +683,7 @@ include '../includes/header.php';
         });
 
          // Validación del formulario
-        const form = document.getElementById('formMaestria');
+        const form = document.getElementById('formdoctorado');
         if (form) {
             // Configurar validación al enviar
             form.addEventListener('submit', function(e) {
@@ -640,5 +719,3 @@ include '../includes/header.php';
         }
     });
 </script>
-
-<?php include '../includes/footer.php'; ?>

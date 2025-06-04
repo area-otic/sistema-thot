@@ -4,7 +4,7 @@ include '../control/check_session.php';
 
 // Obtener categorías de la base de datos
 try {
-    $stmtCategorias = $conn->query("SELECT id, nombre FROM categorias_programas ORDER BY nombre");
+    $stmtCategorias = $conn->query("SELECT id, nombre FROM data_categorias_programas ORDER BY nombre");
     $categorias = $stmtCategorias->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
     $categorias = [];
@@ -22,7 +22,7 @@ try {
 
 // Inicializar variables
 $titulo = $descripcion = $tipo = $categoria = $universidad = $pais = $modalidad = $duracion = $imagen_url = $objetivos = $plan_estudios = $url = $estado_programa = '';
-$precio_monto = $precio_moneda = $idioma = $fecha_admision = $titulo_grado = $ciudad_universidad = $docentes = $url_brochure = '';
+$precio_monto = $precio_moneda = $idioma = $fecha_admision = $titulo_grado = $ciudad_universidad = $requisitos = $url_brochure = '';
 $id = null;
 $isEdit = false;
 
@@ -69,7 +69,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
             $fecha_admision = $maestria['fecha_admision'];
             $titulo_grado = $maestria['titulo_grado'];
             $ciudad_universidad = $maestria['ciudad_universidad'];
-            $docentes = $maestria['docentes'];
+            $requisitos = $maestria['requisitos'];
             $url_brochure = $maestria['url_brochure'];
             
         } else {
@@ -107,7 +107,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $idioma = trim($_POST['maestria-idioma']);
     $fecha_admision = trim($_POST['maestria-fecha-admision']);
     $titulo_grado = trim($_POST['maestria-titulo-grado']);
-    $docentes = trim($_POST['maestria-docentes']);
+    $reqiusitos = trim($_POST['maestria-reqiusitos']);
     $url_brochure = trim($_POST['maestria-url-brochure']);
     $user_encargado = $_SESSION['username']; // Obtener el usuario de la sesión
     
@@ -142,7 +142,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                     idioma = :idioma,
                     fecha_admision = :fecha_admision,
                     titulo_grado = :titulo_grado,
-                    docentes = :docentes,
+                    requisitos = :requisitos,
                     url_brochure = :url_brochure,
                     user_encargado = :user_encargado,
                     fecha_modificada = NOW()
@@ -155,13 +155,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                     titulo, descripcion, tipo, categoria, id_universidad, universidad, pais, 
                     modalidad, duracion, imagen_url, objetivos, plan_estudios, 
                     url, estado_programa, precio_monto, precio_moneda, idioma,
-                    fecha_admision, titulo_grado, ciudad_universidad, docentes,
+                    fecha_admision, titulo_grado, ciudad_universidad, requisitos,
                     url_brochure, user_encargado, fecha_creacion, fecha_modificada
                 ) VALUES (
                     :titulo, :descripcion, :tipo, :categoria, :id_universidad, :universidad, :pais,
                     :modalidad, :duracion, :imagen_url, :objetivos, :plan_estudios,
                     :url, :estado_programa, :precio_monto, :precio_moneda, :idioma,
-                    :fecha_admision, :titulo_grado, :ciudad_universidad, :docentes,
+                    :fecha_admision, :titulo_grado, :ciudad_universidad, :requisitos,
                     :url_brochure, :user_encargado, NOW(), NOW()
                 )");
             }
@@ -189,7 +189,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':idioma', $idioma);
             $stmt->bindParam(':fecha_admision', $fecha_admision);
             $stmt->bindParam(':titulo_grado', $titulo_grado);
-            $stmt->bindParam(':docentes', $docentes);
+            $stmt->bindParam(':requisitos', $requisitos);
             $stmt->bindParam(':url_brochure', $url_brochure);
             $stmt->bindParam(':user_encargado', $user_encargado);
             
@@ -493,8 +493,8 @@ include '../includes/header.php';
                             <textarea class="form-control" name="maestria-plan" rows="5" ><?= htmlspecialchars($plan_estudios) ?></textarea>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Docentes</label>
-                            <textarea class="form-control" name="maestria-docentes" rows="2"><?= htmlspecialchars($docentes) ?></textarea>
+                            <label class="form-label">Requisitos</label>
+                            <textarea class="form-control" name="maestria-requisitos" rows="2"><?= htmlspecialchars($requisitos) ?></textarea>
                             <small class="text-muted">Separar nombres con comas</small>
                         </div>
                     </div>

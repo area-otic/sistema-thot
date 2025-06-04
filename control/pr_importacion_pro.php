@@ -8,7 +8,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         $archivo = $_FILES['archivo'];
         $fecha_actual = date('Y-m-d H:i:s');
         
-        // Validar extensión
         if (strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION)) !== 'csv') {
             throw new Exception("Solo se permiten archivos CSV");
         }
@@ -23,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
             unset($_SESSION['origen_importacion']);
         }
 
-        header('Location: ../pages/'.$pagina_destino.'?success='.urlencode("Archivo importado. Registros: ".$resultado['registros']));
+        header('Location: ../pages/'.$pagina_destino.'?success='.urlencode("Archivo importado. Registros nuevos: ".$resultado['nuevos']." | Actualizados: ".$resultado['actualizados']));
         exit();
         
     } catch (Exception $e) {
@@ -50,25 +49,15 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
     }
     
     // Validar campos requeridos
-    foreach (['titulo', 'descripcion', 'tipo', 'universidad', 'pais'] as $campo) {
+    foreach (['titulo', 'descripcion', 'tipo', 'universidad', 'pais', 'id_num'] as $campo) {
         if (!in_array($campo, $encabezados)) {
             fclose($handle);
             throw new Exception("Falta el campo requerido: $campo");
         }
     }
     
-    $sql = "INSERT INTO data_programas (
-        id, titulo, descripcion, tipo, categoria, id_universidad, universidad, 
-        pais, modalidad, duracion, imagen_url, objetivos, plan_estudios, url, 
-        estado_programa, precio_monto, precio_moneda, idioma, ciudad_universidad,
-        titulo_grado, docentes, fecha_admision, url_brochure, user_encargado, 
-        fecha_creacion, fecha_modificada
-    ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-    )";
-    
-    $stmt = $conn->prepare($sql);
-    $contador = 0;
+    $contador_nuevos = 0;
+    $contador_actualizados = 0;
     $tipo_programa = '';
     
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
@@ -81,38 +70,54 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
         
         $fila = array_combine($encabezados, $data);
         
-        // OBTENER ID UNIVERSIDAD (NUEVO CÓDIGO)
+        // Verificar si existe id_num
+        $id_num = trim($fila['id_num'] ?? '');
+        if (empty($id_num)) {
+            error_log("Fila omitida - Falta id_num");
+            continue;
+        }
+        
+        // OBTENER ID UNIVERSIDAD - CREAR SI NO EXISTE
         $universidad = trim($fila['universidad'] ?? '');
         $pais = trim($fila['pais'] ?? '');
-        $id_universidad = 0; // Valor por defecto
-        
+        $ciudad_universidad = trim($fila['ciudad_universidad'] ?? '');
+        $id_universidad = 0;
+
         if (!empty($universidad) && !empty($pais)) {
             $stmt_id = $conn->prepare("SELECT id FROM data_instituciones 
-                                     WHERE nombre = ? AND pais = ? LIMIT 1");
+                                    WHERE nombre = ? AND pais = ? LIMIT 1");
             $stmt_id->execute([$universidad, $pais]);
             
             if ($row = $stmt_id->fetch()) {
                 $id_universidad = $row['id'];
             } else {
-                // Intentar búsqueda aproximada si no encuentra exacto
-                $stmt_like = $conn->prepare("SELECT id FROM data_instituciones 
-                                            WHERE nombre LIKE ? AND pais LIKE ? LIMIT 1");
-                $stmt_like->execute(["%$universidad%", "%$pais%"]);
-                
-                if ($row = $stmt_like->fetch()) {
-                    $id_universidad = $row['id'];
+                try {
+                    $stmt_insert = $conn->prepare("INSERT INTO data_instituciones 
+                                                (nombre, pais, ciudad, fecha_creacion, fecha_modificada) 
+                                                VALUES (?, ?, ?, ?, ?)");
+                    $stmt_insert->execute([
+                        $universidad, 
+                        $pais, 
+                        $ciudad_universidad,
+                        $fecha_actual,
+                        $fecha_actual
+                    ]);
+                    $id_universidad = $conn->lastInsertId();
+                } catch (PDOException $e) {
+                    error_log("Error al crear nueva institución: " . $e->getMessage());
                 }
             }
         }
         
-        // Preparar datos para inserción
+
+        // Preparar datos
         $datos = [
-            'id' => trim($fila['id'] ?? null),
+            'id_num' => $id_num,
             'titulo' => trim($fila['titulo'] ?? ''),
             'descripcion' => trim($fila['descripcion'] ?? ''),
             'tipo' => trim($fila['tipo'] ?? ''),
             'categoria' => trim($fila['categoria'] ?? ''),
-            'id_universidad' => $id_universidad, // Usamos el ID encontrado o 0
+            'id_universidad' => $id_universidad,
             'universidad' => trim($fila['universidad'] ?? ''),
             'pais' => trim($fila['pais'] ?? ''),
             'modalidad' => trim($fila['modalidad'] ?? 'Presencial'),
@@ -122,7 +127,7 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
             'plan_estudios' => trim($fila['plan_estudios'] ?? ''),
             'url' => trim($fila['url'] ?? ''),
             'estado_programa' => trim($fila['estado_programa'] ?? 'Publicado'),
-            'precio_monto' => floatval(str_replace(',', '', $fila['precio_monto'] ?? 0)),
+            'precio_monto' => (float)str_replace(',', '', trim($fila['precio_monto'] ?? '0')),
             'precio_moneda' => trim($fila['precio_moneda'] ?? 'USD'),
             'idioma' => trim($fila['idioma'] ?? 'Español'),
             'ciudad_universidad' => trim($fila['ciudad_universidad'] ?? ''),
@@ -131,7 +136,6 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
             'fecha_admision' => procesarFecha($fila['fecha_admision'] ?? '', null),
             'url_brochure' => trim($fila['url_brochure'] ?? ''),
             'user_encargado' => trim($fila['user_encargado'] ?? ''),
-            'fecha_creacion' => procesarFecha($fila['fecha_creacion'] ?? '', $fecha_actual),
             'fecha_modificada' => $fecha_actual
         ];
         
@@ -140,22 +144,89 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
             continue;
         }
         
-        if ($contador === 0) {
+        if ($contador_nuevos === 0 && $contador_actualizados === 0) {
             $tipo_programa = $datos['tipo'];
         }
         
-        try {
-            $stmt->execute(array_values($datos));
-            $contador++;
-        } catch (PDOException $e) {
-            error_log("Error insertando fila: " . $e->getMessage());
-            continue;
+        // Verificar si el registro ya existe
+        $stmt_check = $conn->prepare("SELECT id FROM data_programas WHERE id_num = ? LIMIT 1");
+        $stmt_check->execute([$id_num]);
+        $existe = $stmt_check->fetch();
+        
+        if ($existe) {
+            // ACTUALIZAR REGISTRO EXISTENTE
+            try {
+                $sql_update = "UPDATE data_programas SET
+                    titulo = :titulo,
+                    descripcion = :descripcion,
+                    tipo = :tipo,
+                    categoria = :categoria,
+                    id_universidad = :id_universidad,
+                    universidad = :universidad,
+                    pais = :pais,
+                    modalidad = :modalidad,
+                    duracion = :duracion,
+                    imagen_url = :imagen_url,
+                    objetivos = :objetivos,
+                    plan_estudios = :plan_estudios,
+                    url = :url,
+                    estado_programa = :estado_programa,
+                    precio_monto = :precio_monto,
+                    precio_moneda = :precio_moneda,
+                    idioma = :idioma,
+                    ciudad_universidad = :ciudad_universidad,
+                    titulo_grado = :titulo_grado,
+                    docentes = :docentes,
+                    fecha_admision = :fecha_admision,
+                    url_brochure = :url_brochure,
+                    user_encargado = :user_encargado,
+                    fecha_modificada = :fecha_modificada
+                WHERE id_num = :id_num";
+                
+                $stmt_update = $conn->prepare($sql_update);
+                $stmt_update->execute($datos);
+                $contador_actualizados++;
+            } catch (PDOException $e) {
+                error_log("Error actualizando fila: " . $e->getMessage());
+            }
+        } else {
+            // INSERTAR NUEVO REGISTRO
+            try {
+                $sql_insert = "INSERT INTO data_programas (
+                    id_num, titulo, descripcion, tipo, categoria, id_universidad, universidad, 
+                    pais, modalidad, duracion, imagen_url, objetivos, plan_estudios, url, 
+                    estado_programa, precio_monto, precio_moneda, idioma, ciudad_universidad,
+                    titulo_grado, docentes, fecha_admision, url_brochure, user_encargado, 
+                    fecha_creacion, fecha_modificada
+                ) VALUES (
+                    :id_num, :titulo, :descripcion, :tipo, :categoria, :id_universidad, :universidad, 
+                    :pais, :modalidad, :duracion, :imagen_url, :objetivos, :plan_estudios, :url, 
+                    :estado_programa, :precio_monto, :precio_moneda, :idioma, :ciudad_universidad,
+                    :titulo_grado, :docentes, :fecha_admision, :url_brochure, :user_encargado, 
+                    :fecha_creacion, :fecha_modificada
+                )";
+                
+                // Agregar campos adicionales para el INSERT
+                $datos['fecha_creacion'] = $fecha_actual;
+                
+                $stmt_insert = $conn->prepare($sql_insert);
+                $stmt_insert->execute($datos);
+                $contador_nuevos++;
+            } catch (PDOException $e) {
+                error_log("Error insertando fila: " . $e->getMessage());
+            }
         }
     }
     
     fclose($handle);
-    return ['registros' => $contador, 'tipo_programa' => $tipo_programa];
+    return [
+        'nuevos' => $contador_nuevos,
+        'actualizados' => $contador_actualizados,
+        'tipo_programa' => $tipo_programa
+    ];
 }
+
+
 
 function procesarFecha($fecha_csv, $valor_por_defecto) {
     if (empty(trim($fecha_csv))) {
@@ -170,4 +241,3 @@ function procesarFecha($fecha_csv, $valor_por_defecto) {
         return $valor_por_defecto;
     }
 }
-?>
