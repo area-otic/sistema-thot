@@ -113,21 +113,28 @@
               </a>
             </li>
 
+            
+            
+            <?php
+            $tipo = $_SESSION['tipo_usuario'];
+            if ($tipo !== 'Ejecutivo' && $tipo !== 'Gestor'):
+            ?>
             <!-- Misc -->
             <li class="menu-header small text-uppercase"><span class="menu-header-text">configuracion</span></li>
-            
-            <li class="menu-item">
-              <a href="../pages/gestion_categorias.php" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-category"></i>
-                <div data-i18n="Support">Categorias</div>
-              </a>
-            </li>
-            <li class="menu-item">
-              <a href="../pages/gestion_usuarios.php" class="menu-link">
-                <i class="menu-icon tf-icons bx bxs-user"></i>
-                <div data-i18n="Support">Usuarios</div>
-              </a>
-            </li>
+              <li class="menu-item">
+                <a href="../pages/gestion_categorias.php" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-category"></i>
+                  <div data-i18n="Support">Categorias</div>
+                </a>
+              </li>
+              <li class="menu-item">
+                <a href="../pages/gestion_usuarios.php" class="menu-link">
+                  <i class="menu-icon tf-icons bx bxs-user"></i>
+                  <div data-i18n="Support">Usuarios</div>
+                </a>
+              </li>
+            <?php endif; ?>
+
             <!--<li class="menu-item">
               <a
                 href="https://themeselection.com/demo/sneat-bootstrap-html-admin-template/documentation/"

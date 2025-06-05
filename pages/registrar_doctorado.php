@@ -13,7 +13,7 @@ try {
 
 // Obtener universidades de la base de datos
 try {
-    $stmtUniversidades = $conn->query("SELECT id, nombre, pais, ciudad FROM data_instituciones WHERE estado = 'Activo' ORDER BY nombre");
+    $stmtUniversidades = $conn->query("SELECT id, nombre, pais, ciudad FROM data_instituciones ORDER BY nombre");
     $universidades = $stmtUniversidades->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
     $universidades = [];
@@ -397,7 +397,7 @@ include '../includes/header.php';
                                         data-ciudad="<?php echo htmlspecialchars($uni['ciudad']); ?>"
                                         <?= ($universidad == $uni['id']) ? 'selected' : '' ?>
                                     >
-                                        <?php echo htmlspecialchars($uni['nombre']); ?> (<?php echo htmlspecialchars($uni['ciudad']); ?>, <?php echo htmlspecialchars($uni['pais']); ?>)
+                                        <?php echo htmlspecialchars($uni['nombre']); ?> (<?php echo htmlspecialchars($uni['ciudad'] ?? ''); ?>, <?php echo htmlspecialchars($uni['pais'] ?? ''); ?>)
                                     </option>
                                 <?php endforeach; ?>
                             </select>

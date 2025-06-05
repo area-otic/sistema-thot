@@ -13,7 +13,7 @@ try {
 
 // Obtener universidades de la base de datos
 try {
-    $stmtUniversidades = $conn->query("SELECT id, nombre, pais, ciudad FROM data_instituciones WHERE estado = 'Activo' ORDER BY nombre");
+    $stmtUniversidades = $conn->query("SELECT id, nombre, pais, ciudad FROM data_instituciones  ORDER BY nombre");
     $universidades = $stmtUniversidades->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
     $universidades = [];
@@ -398,7 +398,7 @@ include '../includes/header.php';
                                         data-ciudad="<?php echo htmlspecialchars($uni['ciudad']); ?>"
                                         <?= ($universidad == $uni['id']) ? 'selected' : '' ?>
                                     >
-                                        <?php echo htmlspecialchars($uni['nombre']); ?> (<?php echo htmlspecialchars($uni['ciudad']); ?>, <?php echo htmlspecialchars($uni['pais']); ?>)
+                                        <?php echo htmlspecialchars($uni['nombre']); ?> (<?php echo htmlspecialchars($uni['ciudad'] ?? ''); ?>, <?php echo htmlspecialchars($uni['pais'] ?? ''); ?>)
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -448,20 +448,20 @@ include '../includes/header.php';
                             <input type="text" class="form-control" name="maestria-titulo-grado" value="<?= htmlspecialchars($titulo_grado) ?>">
                         </div>
                         <div class="col-md-6">
-    <label for="precio-input" class="form-label">Precio</label>
-    <div class="input-group has-validation"> <!-- Agregado has-validation para validación -->
-        <span class="input-group-text">$</span>
-        <input type="number" class="form-control" id="precio-input" name="maestria-precio-monto" 
-               value="<?= htmlspecialchars($precio_monto) ?>"
-               min="0"  step="0.01" placeholder="0.00"  required aria-describedby="moneda-help">
-        
-        <select class="form-select" id="select-moneda" name="maestria-precio-moneda" required aria-label="Seleccione moneda">
-            <option value="" disabled selected>Seleccione moneda</option>
-            <!-- Las opciones se cargarán via JavaScript -->
-        </select>
-    </div>
-    <div id="moneda-help" class="form-text">Ingrese el monto y seleccione la moneda</div>
-</div>
+                            <label for="precio-input" class="form-label">Precio</label>
+                            <div class="input-group has-validation"> <!-- Agregado has-validation para validación -->
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="precio-input" name="maestria-precio-monto" 
+                                    value="<?= htmlspecialchars($precio_monto) ?>"
+                                    min="0"  step="0.01" placeholder="0.00"  required aria-describedby="moneda-help">
+                                
+                                <select class="form-select" id="select-moneda" name="maestria-precio-moneda" required aria-label="Seleccione moneda">
+                                    <option value="" disabled selected>Seleccione moneda</option>
+                                    <!-- Las opciones se cargarán via JavaScript -->
+                                </select>
+                            </div>
+                            <div id="moneda-help" class="form-text">Ingrese el monto y seleccione la moneda</div>
+                        </div>
 
                     </div>
                 </div>

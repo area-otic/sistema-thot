@@ -77,9 +77,12 @@ include '../includes/header.php';
                                         <i class='bx bx-show'></i>
                                     </button>
                                         <a href='registrar_instituciones.php?id={$row['id']}' class='btn btn-info btn-sm'><i class='bx bx-edit'></i>
-                                    </a>
-                                        <a href='../control/pr_eliminar_universidad.php?id={$row['id']}' class='btn btn-danger btn-sm'><i class='bx bx-trash'></i>
-                                    </a>
+                                    </a>                                       
+                                    " . (
+                                            ($_SESSION['tipo_usuario'] === 'Gestor' || $_SESSION['tipo_usuario'] === 'Administrador') ?
+                                            "<a href='../control/pr_eliminar_universidad.php?id={$row['id']}' class='btn btn-danger btn-sm'><i class='bx bx-trash'></i></a>" :
+                                            ""
+                                        ) . "
                                 </td>
                             </tr>";
                     }

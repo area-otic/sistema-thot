@@ -35,6 +35,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     exit();
 }
 
+function procesarFecha2($fecha_csv, $valor_por_defecto) {
+    if (empty(trim($fecha_csv))) {
+        return $valor_por_defecto;
+    }
+    
+    // Intentar varios formatos comunes
+    $formatos = ['d/m/Y', 'Y-m-d', 'm/d/Y', 'Y-m-d H:i:s'];
+    
+    foreach ($formatos as $formato) {
+        $date = DateTime::createFromFormat($formato, trim($fecha_csv));
+        if ($date) {
+            return $date->format('Y-m-d H:i:s');
+        }
+    }
+    
+    error_log("Error formato fecha: $fecha_csv");
+    return $valor_por_defecto;
+}
+
 function normalizarDecimalCSV($valor) {
     // Elimina todos los caracteres no numéricos excepto coma y punto
     $limpio = preg_replace('/[^0-9,\.]/', '', trim($valor));
@@ -106,30 +125,35 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
         $id_universidad = 0;
 
         if (!empty($universidad) && !empty($pais)) {
-            $stmt_id = $conn->prepare("SELECT id FROM data_instituciones 
-                                    WHERE nombre = ? AND pais = ? LIMIT 1");
-            $stmt_id->execute([$universidad, $pais]);
-            
-            if ($row = $stmt_id->fetch()) {
-                $id_universidad = $row['id'];
-            } else {
-                try {
-                    $stmt_insert = $conn->prepare("INSERT INTO data_instituciones 
-                                                (nombre, pais, ciudad, fecha_creacion, fecha_modificada) 
-                                                VALUES (?, ?, ?, ?, ?)");
-                    $stmt_insert->execute([
-                        $universidad, 
-                        $pais, 
-                        $ciudad_universidad,
-                        $fecha_actual,
-                        $fecha_actual
-                    ]);
-                    $id_universidad = $conn->lastInsertId();
-                } catch (PDOException $e) {
-                    error_log("Error al crear nueva institución: " . $e->getMessage());
-                }
+        $stmt_id = $conn->prepare("SELECT id FROM data_instituciones 
+                                WHERE nombre = ? AND pais = ? LIMIT 1");
+        $stmt_id->execute([$universidad, $pais]);
+        
+        if ($row = $stmt_id->fetch()) {
+            $id_universidad = $row['id'];
+        } else {
+            try {
+                $stmt_insert = $conn->prepare("INSERT INTO data_instituciones 
+                                            (nombre, pais, ciudad, estado, convenio, fecha_creacion, fecha_modificada) 
+                                            VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $stmt_insert->execute([
+                    $universidad, 
+                    $pais, 
+                    $ciudad_universidad,
+                    'Activo',    // Estado por defecto
+                    'No',        // Convenio por defecto
+                    $fecha_actual,
+                    $fecha_actual
+                ]);
+                $id_universidad = $conn->lastInsertId();
+                
+                error_log("Nueva institución creada: $universidad (ID: $id_universidad)");
+            } catch (PDOException $e) {
+                error_log("Error al crear nueva institución: " . $e->getMessage());
+                // Puedes opcionalmente continuar o lanzar la excepción
             }
         }
+    }
         
 
         // Preparar datos
@@ -157,7 +181,10 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
             'requisitos' => trim($fila['requisitos'] ?? ''),
             'fecha_admision' => procesarFecha($fila['fecha_admision'] ?? '', null),
             'url_brochure' => trim($fila['url_brochure'] ?? ''),
-            'user_encargado' => trim($fila['user_encargado'] ?? ''),
+            'user_encargado' => !empty(trim($fila['user_encargado'] ?? '')) 
+            ? trim($fila['user_encargado']) 
+            : $_SESSION['username'],
+            'fecha_creacion' => procesarFecha($fila['fecha_creacion'] ?? '', $fecha_actual),
             'fecha_modificada' => $fecha_actual
         ];
         
@@ -227,9 +254,6 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
                     :titulo_grado, :requisitos, :fecha_admision, :url_brochure, :user_encargado, 
                     :fecha_creacion, :fecha_modificada
                 )";
-                
-                // Agregar campos adicionales para el INSERT
-                $datos['fecha_creacion'] = $fecha_actual;
                 
                 $stmt_insert = $conn->prepare($sql_insert);
                 $stmt_insert->execute($datos);

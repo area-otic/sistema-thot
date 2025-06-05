@@ -218,6 +218,7 @@ include '../includes/header.php';
                     <option value="">Seleccionar tipo</option>
                     <option value="Administrador" <?php echo ($tipousuario == 'Administrador') ? 'selected' : ''; ?>>Administrador</option>
                     <option value="Gestor" <?php echo ($tipousuario == 'Gestor') ? 'selected' : ''; ?>>Gestor</option>
+                    <option value="Ejecutivo" <?php echo ($tipousuario == 'Ejecutivo') ? 'selected' : ''; ?>>Ejecutivo</option>
                     <option value="Suscriptor" <?php echo ($tipousuario == 'Suscriptor') ? 'selected' : ''; ?>>Suscriptor</option>
                     </select>
                     <div class="invalid-feedback">Por favor seleccione el tipo de usuario</div>

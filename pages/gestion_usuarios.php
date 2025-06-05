@@ -7,7 +7,7 @@ include '../includes/header.php';
 
 <div class="container-xxl flex-grow-1 container-p-y">
 
-<div class="row g-6 mb-6" style="margin-bottom:20px;">
+<!--<div class="row g-6 mb-6" style="margin-bottom:20px;">
     <div class="col-sm-6 col-xl-3">
       <div class="card">
         <div class="card-body">
@@ -48,7 +48,7 @@ include '../includes/header.php';
         </div>
       </div>
     </div>
-</div>
+</div>-->
 
   
     <?php

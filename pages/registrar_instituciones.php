@@ -332,66 +332,100 @@ include '../includes/header.php';
    <!-- DataTables JS -->
    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-<script>
-        
-        document.addEventListener('DOMContentLoaded', function() {
-        fetch('https://restcountries.com/v3.1/all')
-        .then(res => res.json())
-        .then(data => {
-            const paisSelect = document.getElementById('pais');
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paisSelect = document.getElementById('pais');
+    const paisActual = '<?php echo $pais; ?>'; // País actual de la institución
+    
+    // Opción temporal mientras se cargan los países
+    paisSelect.innerHTML = '<option value="">Cargando países...</option>';
+    
+    // Función para cargar países
+    function cargarPaises() {
+        // Primero intentamos con la API REST Countries
+        fetch('https://restcountries.com/v3.1/all?fields=name,translations')
+        .then(res => {
+            if (!res.ok) throw new Error('Error al cargar países');
+            return res.json();
+        })
+        .then(data => {
             // Ordenar países por nombre en español
             const paisesOrdenados = data.sort((a, b) => {
                 const nombreA = a.translations?.spa?.common || a.name.common;
                 const nombreB = b.translations?.spa?.common || b.name.common;
                 return nombreA.localeCompare(nombreB, 'es');
             });
-
+            
+            // Limpiar select
             paisSelect.innerHTML = '<option value="">Seleccionar país...</option>';
-           
+            
+            // Agregar países
             paisesOrdenados.forEach(pais => {
                 const nombrePais = pais.translations?.spa?.common || pais.name.common;
-                const monedas = pais.currencies;
-
-                // País
-                const optionPais = document.createElement('option');
-                optionPais.value = nombrePais;
-                optionPais.textContent = nombrePais;
-                paisSelect.appendChild(optionPais);
+                const option = document.createElement('option');
+                option.value = nombrePais;
+                option.textContent = nombrePais;
+                
+                // Seleccionar el país actual si coincide
+                if (nombrePais === paisActual) {
+                    option.selected = true;
+                }
+                
+                paisSelect.appendChild(option);
             });
+            
+            // Si hay un país actual pero no está en la lista
+            if (paisActual && ![...paisSelect.options].some(opt => opt.value === paisActual)) {
+                const option = document.createElement('option');
+                option.value = paisActual;
+                option.textContent = paisActual;
+                option.selected = true;
+                paisSelect.appendChild(option);
+            }
         })
-        .catch(err => {
-            console.error('Error al cargar países/monedas', err);
+        .catch(error => {
+            console.error('Error con API de países:', error);
+            // Plan B: Lista estática de países comunes
+            const paisesComunes = [
+                'Perú', 'Argentina', 'Brasil', 'Chile', 'Colombia', 
+                'Ecuador', 'México', 'España', 'Estados Unidos'
+            ];
+            
+            paisSelect.innerHTML = '<option value="">Seleccionar país...</option>';
+            paisesComunes.forEach(pais => {
+                const option = document.createElement('option');
+                option.value = pais;
+                option.textContent = pais;
+                if (pais === paisActual) option.selected = true;
+                paisSelect.appendChild(option);
+            });
+            
+            if (paisActual && !paisesComunes.includes(paisActual)) {
+                const option = document.createElement('option');
+                option.value = paisActual;
+                option.textContent = paisActual;
+                option.selected = true;
+                paisSelect.appendChild(option);
+            }
         });
-
-        const form = document.getElementById('formMaestria');
-        
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                if (!form.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    form.classList.add('was-validated');
-                }
-            });
-        }
-    });
-
+    }
+    
+    // Iniciar carga de países
+    cargarPaises();
+    
     // Validación de formulario
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('formInstitucion');
-        
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                if (!form.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            });
-        }
-        
-    });
+    const form = document.getElementById('formInstitucion');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    }
+});
 </script>
 
 <?php include '../includes/footer.php'; ?>

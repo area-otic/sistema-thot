@@ -124,8 +124,11 @@ include '../includes/header.php';
                                         </button>
                                             <a href='registrar_maestria.php?id={$row['id']}' class='btn btn-info btn-sm'><i class='bx bx-edit'></i>
                                         </a>
-                                            <a href='../control/pr_eliminar_maestria.php?id={$row['id']}' class='btn btn-danger btn-sm'><i class='bx bx-trash'></i>
-                                        </a>
+                                            " . (
+                                                    ($_SESSION['tipo_usuario'] === 'Gestor' || $_SESSION['tipo_usuario'] === 'Administrador') ?
+                                                    "<a href='../control/pr_eliminar_maestria.php?id={$row['id']}' class='btn btn-danger btn-sm'><i class='bx bx-trash'></i></a>" :
+                                                    ""
+                                                ) . "
                                     </td>
                                 </tr>";
                         }
@@ -265,6 +268,8 @@ include '../includes/header.php';
                 $('.dataTables_scrollBody').css('min-height', '300px');
             }
         });
+
+        
     });
 
 
