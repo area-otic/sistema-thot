@@ -35,6 +35,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     exit();
 }
 
+function normalizarDecimalCSV($valor) {
+    // Elimina todos los caracteres no numéricos excepto coma y punto
+    $limpio = preg_replace('/[^0-9,\.]/', '', trim($valor));
+    
+    // Caso 1: Si tiene coma y punto (ej: 1.500,00)
+    if (strpos($limpio, ',') !== false && strpos($limpio, '.') !== false) {
+        // Elimina puntos de miles y convierte coma en punto decimal
+        return (float) str_replace(',', '.', str_replace('.', '', $limpio));
+    }
+    // Caso 2: Solo tiene coma (ej: 1500,00)
+    elseif (strpos($limpio, ',') !== false) {
+        // Reemplaza coma por punto decimal
+        return (float) str_replace(',', '.', $limpio);
+    }
+    // Caso 3: Solo tiene punto (ej: 1500.00)
+    else {
+        // Lo deja tal cual (ya está en formato correcto)
+        return (float) $limpio;
+    }
+}
+
 function procesarCSV($ruta_archivo, $fecha_actual) {
     global $conn;
     
@@ -127,12 +148,12 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
             'plan_estudios' => trim($fila['plan_estudios'] ?? ''),
             'url' => trim($fila['url'] ?? ''),
             'estado_programa' => trim($fila['estado_programa'] ?? 'Publicado'),
-            'precio_monto' => (float)str_replace(',', '', trim($fila['precio_monto'] ?? '0')),
+            'precio_monto' => normalizarDecimalCSV($fila['precio_monto'] ?? '0'),
             'precio_moneda' => trim($fila['precio_moneda'] ?? 'USD'),
             'idioma' => trim($fila['idioma'] ?? 'Español'),
             'ciudad_universidad' => trim($fila['ciudad_universidad'] ?? ''),
             'titulo_grado' => trim($fila['titulo_grado'] ?? ''),
-            'docentes' => trim($fila['docentes'] ?? ''),
+            'requisitos' => trim($fila['requisitos'] ?? ''),
             'fecha_admision' => procesarFecha($fila['fecha_admision'] ?? '', null),
             'url_brochure' => trim($fila['url_brochure'] ?? ''),
             'user_encargado' => trim($fila['user_encargado'] ?? ''),
@@ -176,7 +197,7 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
                     idioma = :idioma,
                     ciudad_universidad = :ciudad_universidad,
                     titulo_grado = :titulo_grado,
-                    docentes = :docentes,
+                    requisitos = :requisitos,
                     fecha_admision = :fecha_admision,
                     url_brochure = :url_brochure,
                     user_encargado = :user_encargado,
@@ -196,13 +217,13 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
                     id_num, titulo, descripcion, tipo, categoria, id_universidad, universidad, 
                     pais, modalidad, duracion, imagen_url, objetivos, plan_estudios, url, 
                     estado_programa, precio_monto, precio_moneda, idioma, ciudad_universidad,
-                    titulo_grado, docentes, fecha_admision, url_brochure, user_encargado, 
+                    titulo_grado, requisitos, fecha_admision, url_brochure, user_encargado, 
                     fecha_creacion, fecha_modificada
                 ) VALUES (
                     :id_num, :titulo, :descripcion, :tipo, :categoria, :id_universidad, :universidad, 
                     :pais, :modalidad, :duracion, :imagen_url, :objetivos, :plan_estudios, :url, 
                     :estado_programa, :precio_monto, :precio_moneda, :idioma, :ciudad_universidad,
-                    :titulo_grado, :docentes, :fecha_admision, :url_brochure, :user_encargado, 
+                    :titulo_grado, :requisitos, :fecha_admision, :url_brochure, :user_encargado, 
                     :fecha_creacion, :fecha_modificada
                 )";
                 
