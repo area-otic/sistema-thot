@@ -49,6 +49,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
             $doctorado = $stmt->fetch(PDO::FETCH_ASSOC);
             
             // Asignar valores a las variables
+            $id_num = $doctorado['id_num'];
             $titulo = $doctorado['titulo'];
             $descripcion = $doctorado['descripcion'];
             $tipo = $doctorado['tipo'];
@@ -85,6 +86,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
 // Procesar el formulario cuando se envía
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Recoger y sanitizar los datos del formulario
+    $id_num = trim($_POST['docotrado-idnum']);
     $titulo = trim($_POST['doctorado-titulo']);
     $descripcion = trim($_POST['doctorado-descripcion']);
     $tipo = trim($_POST['doctorado-tipo']);
@@ -120,6 +122,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             if($isEdit) {
                 // Actualizar registro existente
                 $stmt = $conn->prepare("UPDATE data_programas SET 
+                    id_num = :id_num,
                     titulo = :titulo,
                     descripcion = :descripcion,
                     tipo = :tipo,
@@ -152,13 +155,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 // Insertar nuevo registro
                 $stmt = $conn->prepare("INSERT INTO data_programas (
-                    titulo, descripcion, tipo, categoria, id_universidad, universidad, pais, 
+                    id_num, titulo, descripcion, tipo, categoria, id_universidad, universidad, pais, 
                     modalidad, duracion, imagen_url, objetivos, plan_estudios, 
                     url, estado_programa, precio_monto, precio_moneda, idioma,
                     fecha_admision, titulo_grado, ciudad_universidad, requisitos,
                     url_brochure, user_encargado, fecha_creacion, fecha_modificada
                 ) VALUES (
-                    :titulo, :descripcion, :tipo, :categoria, :id_universidad, :universidad, :pais,
+                    :id_num, :titulo, :descripcion, :tipo, :categoria, :id_universidad, :universidad, :pais,
                     :modalidad, :duracion, :imagen_url, :objetivos, :plan_estudios,
                     :url, :estado_programa, :precio_monto, :precio_moneda, :idioma,
                     :fecha_admision, :titulo_grado, :ciudad_universidad, :requisitos,
@@ -167,6 +170,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             
             // Bind parameters
+            $stmt->bindParam(':id_num', $id_num);
             $stmt->bindParam(':titulo', $titulo);
             $stmt->bindParam(':descripcion', $descripcion);
             $stmt->bindParam(':tipo', $tipo);
@@ -327,9 +331,13 @@ include '../includes/header.php';
                     <h6 class="mb-3 text-primary"><i class="bx bx-info-circle me-2"></i>Información Básica</h6>
                     <div class="row g-3">
                         <!-- Fila 1 -->
-                        <div class="col-md-4">
+                         <div class="col-md-2">
                             <label class="form-label">ID</label>
                             <input type="text" class="form-control" value="<?php echo $isEdit ? $id : 'Generado automáticamente'; ?>" readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">ID NUM</label>
+                            <input type="text" class="form-control" name="doctorado-idnum"  value="<?php echo $isEdit ? $id_num : ''; ?>" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Modalidad*</label>

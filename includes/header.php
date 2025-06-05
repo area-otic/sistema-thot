@@ -118,7 +118,7 @@
             
             <li class="menu-item">
               <a href="../pages/gestion_categorias.php" class="menu-link">
-                <i class="menu-icon tf-icons bx bxs-user"></i>
+                <i class="menu-icon tf-icons bx bx-category"></i>
                 <div data-i18n="Support">Categorias</div>
               </a>
             </li>

@@ -49,6 +49,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
             $maestria = $stmt->fetch(PDO::FETCH_ASSOC);
             
             // Asignar valores a las variables
+            $id_num = $maestria['id_num'];
             $titulo = $maestria['titulo'];
             $descripcion = $maestria['descripcion'];
             $tipo = $maestria['tipo'];
@@ -85,6 +86,7 @@ if(isset($_GET['id']) && !empty($_GET['id'])) {
 // Procesar el formulario cuando se envía
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Recoger y sanitizar los datos del formulario
+    $id_num = trim($_POST['maestria-idnum']);
     $titulo = trim($_POST['maestria-titulo']);
     $descripcion = trim($_POST['maestria-descripcion']);
     $tipo = trim($_POST['maestria-tipo']);
@@ -119,7 +121,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         try {
             if($isEdit) {
                 // Actualizar registro existente
-                $stmt = $conn->prepare("UPDATE data_programas SET 
+                $stmt = $conn->prepare("UPDATE data_programas SET
+                    id_num = :id_num,
                     titulo = :titulo,
                     descripcion = :descripcion,
                     tipo = :tipo,
@@ -152,13 +155,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 // Insertar nuevo registro
                 $stmt = $conn->prepare("INSERT INTO data_programas (
-                    titulo, descripcion, tipo, categoria, id_universidad, universidad, pais, 
+                    id_num, titulo, descripcion, tipo, categoria, id_universidad, universidad, pais, 
                     modalidad, duracion, imagen_url, objetivos, plan_estudios, 
                     url, estado_programa, precio_monto, precio_moneda, idioma,
                     fecha_admision, titulo_grado, ciudad_universidad, requisitos,
                     url_brochure, user_encargado, fecha_creacion, fecha_modificada
                 ) VALUES (
-                    :titulo, :descripcion, :tipo, :categoria, :id_universidad, :universidad, :pais,
+                    :id_num,:titulo, :descripcion, :tipo, :categoria, :id_universidad, :universidad, :pais,
                     :modalidad, :duracion, :imagen_url, :objetivos, :plan_estudios,
                     :url, :estado_programa, :precio_monto, :precio_moneda, :idioma,
                     :fecha_admision, :titulo_grado, :ciudad_universidad, :requisitos,
@@ -167,6 +170,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             
             // Bind parameters
+            $stmt->bindParam(':id_num', $id_num);
             $stmt->bindParam(':titulo', $titulo);
             $stmt->bindParam(':descripcion', $descripcion);
             $stmt->bindParam(':tipo', $tipo);
@@ -215,6 +219,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 }
+
 // Incluir el header
 include '../includes/header.php';
 ?>
@@ -327,9 +332,13 @@ include '../includes/header.php';
                     <h6 class="mb-3 text-primary"><i class="bx bx-info-circle me-2"></i>Información Básica</h6>
                     <div class="row g-3">
                         <!-- Fila 1 -->
-                        <div class="col-md-4">
+                        <div class="col-md-2">
                             <label class="form-label">ID</label>
                             <input type="text" class="form-control" value="<?php echo $isEdit ? $id : 'Generado automáticamente'; ?>" readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">ID NUM</label>
+                            <input type="text" class="form-control" name="maestria-idnum"  value="<?php echo $isEdit ? $id_num : ''; ?>" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Modalidad*</label>
@@ -439,15 +448,20 @@ include '../includes/header.php';
                             <input type="text" class="form-control" name="maestria-titulo-grado" value="<?= htmlspecialchars($titulo_grado) ?>">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Precio</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" class="form-control" name="maestria-precio-monto" value="<?= htmlspecialchars($precio_monto) ?>">
-                                <select class="form-select" id="select-moneda" name="maestria-precio-moneda" style="max-width: 80%;">
-                                    <option value="">Cargando monedas...</option>
-                                </select>
-                            </div>
-                        </div>
+    <label for="precio-input" class="form-label">Precio</label>
+    <div class="input-group has-validation"> <!-- Agregado has-validation para validación -->
+        <span class="input-group-text">$</span>
+        <input type="number" class="form-control" id="precio-input" name="maestria-precio-monto" 
+               value="<?= htmlspecialchars($precio_monto) ?>"
+               min="0"  step="0.01" placeholder="0.00"  required aria-describedby="moneda-help">
+        
+        <select class="form-select" id="select-moneda" name="maestria-precio-moneda" required aria-label="Seleccione moneda">
+            <option value="" disabled selected>Seleccione moneda</option>
+            <!-- Las opciones se cargarán via JavaScript -->
+        </select>
+    </div>
+    <div id="moneda-help" class="form-text">Ingrese el monto y seleccione la moneda</div>
+</div>
 
                     </div>
                 </div>
@@ -662,6 +676,9 @@ include '../includes/header.php';
             const monedasDefault = {
                 USD: "Dólar estadounidense",
                 EUR: "Euro",
+                ARS: "Peso argentino",
+                COP: "Peso colombiano",
+                PEN: "Sol peruano",
                 MXN: "Peso mexicano"
             };
             // Ordenar las monedas por defecto alfabéticamente

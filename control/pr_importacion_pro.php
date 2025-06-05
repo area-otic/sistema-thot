@@ -63,7 +63,7 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
         throw new Exception("No se pudo abrir el archivo CSV");
     }
     
-    $encabezados = array_map('strtolower', array_map('trim', fgetcsv($handle, 1000, ",")));
+    $encabezados = array_map('strtolower', array_map('trim', fgetcsv($handle, 0, ",", '"', '\\')));
     if ($encabezados === FALSE) {
         fclose($handle);
         throw new Exception("No se pudieron leer los encabezados");
@@ -81,7 +81,7 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
     $contador_actualizados = 0;
     $tipo_programa = '';
     
-    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+    while (($data = fgetcsv($handle, 0, ",", '"', '\\')) !== FALSE) {
         if (count(array_filter($data)) === 0) continue;
         
         if (count($data) !== count($encabezados)) {
@@ -97,6 +97,7 @@ function procesarCSV($ruta_archivo, $fecha_actual) {
             error_log("Fila omitida - Falta id_num");
             continue;
         }
+        
         
         // OBTENER ID UNIVERSIDAD - CREAR SI NO EXISTE
         $universidad = trim($fila['universidad'] ?? '');
