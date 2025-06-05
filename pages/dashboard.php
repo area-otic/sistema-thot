@@ -39,10 +39,10 @@ $total_testimonios = $stmt_testimonios->fetch(PDO::FETCH_ASSOC)['total'];
                   <div class="card-body">
                       <h5 class="card-title text-primary">Bienvenido <?php echo htmlspecialchars($_SESSION['nombre'] . ' ' . $_SESSION['apellido']); ?>! 🎉</h5>
                       <p class="mb-4">
-                        Sistema de Gestión de THOT.
-                        Almacena y gestiona toda la documentación de la plataforma de THOT.
+                        Sistema de Gestión de THOTH.
+                        Almacena y gestiona toda la documentación de la plataforma de THOTH.
                       </p>
-                      <a href="https://thoth.education/" class="btn btn-sm btn-outline-primary">Ver Página de Thot</a>
+                      <a href="https://thoth.education/" class="btn btn-sm btn-outline-primary">Ver Página de Thoth</a>
                   </div>
               </div>
               <div class="col-sm-5 text-center text-sm-left">
