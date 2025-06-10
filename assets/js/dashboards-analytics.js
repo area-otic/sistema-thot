@@ -488,101 +488,133 @@
     statisticsChart.render();
   }
 
-  // Income Chart - Area chart
+  // Income Chart - Area chart con datos reales
   // --------------------------------------------------------------------
-  const incomeChartEl = document.querySelector('#incomeChart'),
-    incomeChartConfig = {
-      series: [
-        {
-          data: [24, 21, 30, 22, 42, 26, 35, 29]
-        }
-      ],
-      chart: {
-        height: 215,
-        parentHeightOffset: 0,
-        parentWidthOffset: 0,
-        toolbar: {
-          show: false
-        },
-        type: 'area'
+  const incomeChartEl = document.querySelector('#incomeChart');
+  
+  // Verifica si tenemos datos del servidor
+  const chartData = window.chartData || {
+    meses: ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'],
+    totales: [24, 21, 30, 22, 42, 26, 35, 29],
+    maestrias: [],
+    doctorados: []
+  };
+
+  const incomeChartConfig = {
+    series: [
+      {
+        name: 'Total Programas',
+        data: chartData.totales
       },
-      dataLabels: {
-        enabled: false
-      },
-      stroke: {
-        width: 2,
-        curve: 'smooth'
-      },
-      legend: {
+      ...(chartData.maestrias.length > 0 ? [{
+        name: 'Maestrías',
+        data: chartData.maestrias
+      }] : []),
+      ...(chartData.doctorados.length > 0 ? [{
+        name: 'Doctorados',
+        data: chartData.doctorados
+      }] : [])
+    ],
+    chart: {
+      height: 215,
+      parentHeightOffset: 0,
+      parentWidthOffset: 0,
+      toolbar: {
         show: false
       },
-      markers: {
-        size: 6,
-        colors: 'transparent',
-        strokeColors: 'transparent',
-        strokeWidth: 4,
-        discrete: [
-          {
-            fillColor: config.colors.white,
-            seriesIndex: 0,
-            dataPointIndex: 7,
-            strokeColor: config.colors.primary,
-            strokeWidth: 2,
-            size: 6,
-            radius: 8
-          }
-        ],
-        hover: {
-          size: 7
+      type: 'area'
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      width: 2,
+      curve: 'smooth'
+    },
+    legend: {
+      show: chartData.maestrias.length > 0, // Mostrar leyenda solo si hay datos
+      position: 'top',
+      horizontalAlign: 'left'
+    },
+    markers: {
+      size: 6,
+      colors: 'transparent',
+      strokeColors: 'transparent',
+      strokeWidth: 4,
+      discrete: [
+        {
+          fillColor: config.colors.white,
+          seriesIndex: 0,
+          dataPointIndex: chartData.totales.length - 1,
+          strokeColor: config.colors.primary,
+          strokeWidth: 2,
+          size: 6,
+          radius: 8
         }
-      },
-      colors: [config.colors.primary],
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shade: shadeColor,
-          shadeIntensity: 0.6,
-          opacityFrom: 0.5,
-          opacityTo: 0.25,
-          stops: [0, 95, 100]
-        }
-      },
-      grid: {
-        borderColor: borderColor,
-        strokeDashArray: 3,
-        padding: {
-          top: -20,
-          bottom: -8,
-          left: -10,
-          right: 8
-        }
-      },
-      xaxis: {
-        categories: ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-        axisBorder: {
-          show: false
-        },
-        axisTicks: {
-          show: false
-        },
-        labels: {
-          show: true,
-          style: {
-            fontSize: '13px',
-            colors: axisColor
-          }
-        }
-      },
-      yaxis: {
-        labels: {
-          show: false
-        },
-        min: 10,
-        max: 50,
-        tickAmount: 4
+      ],
+      hover: {
+        size: 7
       }
-    };
-  if (typeof incomeChartEl !== undefined && incomeChartEl !== null) {
+    },
+    colors: [config.colors.primary, config.colors.info, config.colors.success],
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shade: shadeColor,
+        shadeIntensity: 0.6,
+        opacityFrom: 0.5,
+        opacityTo: 0.25,
+        stops: [0, 95, 100]
+      }
+    },
+    grid: {
+      borderColor: borderColor,
+      strokeDashArray: 3,
+      padding: {
+        top: -20,
+        bottom: -8,
+        left: -10,
+        right: 8
+      }
+    },
+    xaxis: {
+      categories: chartData.meses,
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      },
+      labels: {
+        show: true,
+        style: {
+          fontSize: '13px',
+          colors: axisColor
+        }
+      }
+    },
+    yaxis: {
+      labels: {
+        show: true
+      },
+      min: 0,
+      tickAmount: 5
+    },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      y: {
+        formatter: function(y) {
+          if (typeof y !== "undefined") {
+            return y + " programas";
+          }
+          return y;
+        }
+      }
+    }
+  };
+
+  if (typeof incomeChartEl !== 'undefined' && incomeChartEl !== null) {
     const incomeChart = new ApexCharts(incomeChartEl, incomeChartConfig);
     incomeChart.render();
   }

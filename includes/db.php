@@ -3,7 +3,7 @@
 $host = 'localhost';
 $dbname = 'thot_data_db';
 $username = 'root'; 
-$password =  getenv('DB_PASSWORD'); 
+$password = ''; 
 
 
 

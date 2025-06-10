@@ -13,7 +13,7 @@ try {
 
 // Obtener universidades de la base de datos
 try {
-    $stmtUniversidades = $conn->query("SELECT id, nombre, pais, ciudad FROM data_instituciones  ORDER BY nombre");
+    $stmtUniversidades = $conn->query("SELECT id, nombre, pais, ciudad FROM data_instituciones ORDER BY nombre");
     $universidades = $stmtUniversidades->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
     $universidades = [];
@@ -109,12 +109,28 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $idioma = trim($_POST['maestria-idioma']);
     $fecha_admision = trim($_POST['maestria-fecha-admision']);
     $titulo_grado = trim($_POST['maestria-titulo-grado']);
-    $reqiusitos = trim($_POST['maestria-reqiusitos']);
+    $requisitos = trim($_POST['maestria-requisitos']);
     $url_brochure = trim($_POST['maestria-url-brochure']);
     $user_encargado = $_SESSION['username']; // Obtener el usuario de la sesión
     
     // Validación del lado del servidor
     $errors = [];
+
+    // Validar si id_num ya existe (solo para nuevos registros)
+    if (!$isEdit) {
+        try {
+            $stmtCheckId = $conn->prepare("SELECT COUNT(*) FROM data_programas WHERE id_num = :id_num");
+            $stmtCheckId->bindParam(':id_num', $id_num);
+            $stmtCheckId->execute();
+            $count = $stmtCheckId->fetchColumn();
+            
+            if ($count > 0) {
+                $errors[] = 'El ID NUM ya existe en la base de datos. Por favor, use un número diferente.';
+            }
+        } catch(PDOException $e) {
+            $errors[] = "Error al verificar ID NUM: " . $e->getMessage();
+        }
+    }
     
     // Si no hay errores, procesar
     if (empty($errors)) {
@@ -215,11 +231,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         
     } else {
         $error = implode("<br>", $errors);
-        header("Location: registrar_maestria.php?id=$id&error=" . urlencode($error));
-        exit();
     }
 }
-
 // Incluir el header
 include '../includes/header.php';
 ?>
@@ -306,7 +319,7 @@ include '../includes/header.php';
     <h4 class="fw-bold py-3 mb-4">
         <span class="text-muted fw-light">
             Maestrías / 
-            <a href="../pages/gestion_maestrias.php" class=" text-primary text-decoration-none">Registros</a> / 
+            <a href="../pages/gestion_maestrias.php" class="text-primary text-decoration-none">Registros</a> / 
         </span>
         <?php echo $isEdit ? 'Editar Maestría' : 'Agregar Nueva Maestría'; ?>
     </h4>
@@ -338,7 +351,9 @@ include '../includes/header.php';
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">ID NUM</label>
-                            <input type="text" class="form-control" name="maestria-idnum"  value="<?php echo $isEdit ? $id_num : ''; ?>" required>
+                            <input type="text" class="form-control" name="maestria-idnum" value="<?php echo $isEdit ? $id_num : ''; ?>" required>
+
+                            <div class="invalid-feedback">Por favor ingrese un ID NUM válido</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Modalidad*</label>
@@ -432,7 +447,7 @@ include '../includes/header.php';
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Fecha Admisión</label>
-                            <input type="date" class="form-control" name="maestria-fecha-admision" value="<?= htmlspecialchars($fecha_admision) ?>" >
+                            <input type="text" class="form-control" name="maestria-fecha-admision" value="<?= htmlspecialchars($fecha_admision) ?>" >
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Idioma</label>
@@ -462,7 +477,6 @@ include '../includes/header.php';
                             </div>
                             <div id="moneda-help" class="form-text">Ingrese el monto y seleccione la moneda</div>
                         </div>
-
                     </div>
                 </div>
                                 
@@ -547,192 +561,139 @@ include '../includes/header.php';
     </div>
 </div>
 
-  <?php include '../includes/footer.php'; ?>
+<?php include '../includes/footer.php'; ?>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-    $(document).ready(function() {
-          $('.select2-universidad').select2({
-            allowClear: true,  // <- Esta opción habilita el botón de limpieza
-            placeholder: "Seleccionar universidad..."  // Necesario para que funcione allowClear
-        });
-
-        // Inicializar Select2 para moneda
-        $('.select2-moneda').select2({
-            placeholder: "Seleccionar moneda...",
-            allowClear: true
-        });
-
-
-        // Si estamos en modo edición, cargar los datos de la universidad
-        <?php if($isEdit && !empty($universidad)): ?>
-            // Esperar a que Select2 esté listo
-            setTimeout(function() {
-                // Seleccionar la universidad en el dropdown
-                $('#maestria-universidad').val('<?php echo $universidad; ?>').trigger('change');
-                
-                // Forzar la actualización de país y ciudad (por si acaso)
-                const selectedOption = $('#maestria-universidad').find('option:selected');
-                $('#select-pais').val(selectedOption.data('pais') || '<?php echo $pais; ?>');
-                $('#maestria-ciudad').val(selectedOption.data('ciudad') || '<?php echo $ciudad_universidad; ?>');
-                $('#universidad-nombre').val(selectedOption.data('nombre') || '');
-            }, 100);
-        <?php endif; ?>
-
-        // Manejo de cambio de universidad
-        $('#maestria-universidad').on('change', function() {
-            const selectedOption = $(this).find('option:selected');
-            $('#select-pais').val(selectedOption.data('pais') || '');
-            $('#maestria-ciudad').val(selectedOption.data('ciudad') || '');
-            $('#universidad-nombre').val(selectedOption.data('nombre') || '');
-        });
-
-         // Obtener la moneda guardada (si estamos en edición)
-        const monedaGuardada = '<?php echo $precio_moneda; ?>';
-        // Poblar el dropdown de monedas
-        fetch('https://restcountries.com/v3.1/all')
-        .then(res => res.json())
-        .then(data => {
-            const monedaSelect = document.getElementById('select-moneda');
-            const monedasUnicas = [];
-
-            monedaSelect.innerHTML = '<option value="">Seleccionar moneda...</option>';
-
-            // Diccionario de monedas en español
-            const monedasES = {
-                USD: "Dólar estadounidense",
-                EUR: "Euro",
-                MXN: "Peso mexicano",
-                ARS: "Peso argentino",
-                COP: "Peso colombiano",
-                PEN: "Sol peruano",
-                CLP: "Peso chileno",
-                BRL: "Real brasileño",
-                UYU: "Peso uruguayo",
-                PYG: "Guaraní paraguayo",
-                BOB: "Boliviano",
-                GTQ: "Quetzal guatemalteco",
-                DOP: "Peso dominicano",
-                CRC: "Colón costarricense",
-                HNL: "Lempira hondureño",
-                NIO: "Córdoba nicaragüense",
-                SVC: "Colón salvadoreño",
-                VES: "Bolívar venezolano",
-                GBP: "Libra esterlina",
-                JPY: "Yen japonés",
-                CNY: "Yuan chino",
-                KRW: "Won surcoreano",
-                INR: "Rupia india",
-                CAD: "Dólar canadiense",
-                AUD: "Dólar australiano",
-                CHF: "Franco suizo",
-                SEK: "Corona sueca",
-                NOK: "Corona noruega",
-                DKK: "Corona danesa",
-                RUB: "Rublo ruso",
-                TRY: "Lira turca",
-                ZAR: "Rand sudafricano"
-            };
-
-            // Recolectar todas las monedas únicas en un array
-            data.forEach(pais => {
-                const monedas = pais.currencies;
-                if (monedas) {
-                    for (const codigo in monedas) {
-                        if (!monedasUnicas.some(item => item.codigo === codigo)) {
-                            const nombreMoneda = monedasES[codigo] || monedas[codigo].name;
-                            monedasUnicas.push({ codigo, nombre: nombreMoneda });
-                        }
-                    }
-                }
-            });
-
-            // Ordenar alfabéticamente por nombre de moneda
-            monedasUnicas.sort((a, b) => a.nombre.localeCompare(b.nombre));
-
-            monedasUnicas.forEach(moneda => {
-                const optionMoneda = new Option(
-                    `${moneda.codigo} - ${moneda.nombre}`,
-                    moneda.codigo,
-                    false,  // no seleccionado por defecto
-                    moneda.codigo === monedaGuardada  // seleccionar si coincide
-                );
-                monedaSelect.add(optionMoneda);
-            });
-
-            // Y justo después agrega:
-            if (monedaGuardada) {
-                $('#select-moneda').val(monedaGuardada).trigger('change');
-            }
-
-        })
-        .catch(err => {
-            console.error('Error al cargar monedas:', err);
-            const monedaSelect = document.getElementById('select-moneda');
-            monedaSelect.innerHTML = '<option value="">Seleccionar moneda...</option>';
-            const monedasDefault = {
-                USD: "Dólar estadounidense",
-                EUR: "Euro",
-                ARS: "Peso argentino",
-                COP: "Peso colombiano",
-                PEN: "Sol peruano",
-                MXN: "Peso mexicano"
-            };
-            // Ordenar las monedas por defecto alfabéticamente
-            const monedasDefaultArray = Object.entries(monedasDefault)
-                .map(([codigo, nombre]) => ({ codigo, nombre }))
-                .sort((a, b) => a.nombre.localeCompare(b.nombre));
-            
-            monedasDefaultArray.forEach(moneda => {
-                const option = document.createElement('option');
-                option.value = moneda.codigo;
-                option.textContent = `${moneda.codigo} - ${moneda.nombre}`;
-                monedaSelect.appendChild(option);
-            });
-        });
-
-        // Configurar validación para Select2
-        $('.select2-universidad').on('change', function() {
-            $(this).valid();
-        });
-
-         // Validación del formulario
-        const form = document.getElementById('formMaestria');
-        if (form) {
-            // Configurar validación al enviar
-            form.addEventListener('submit', function(e) {
-                if (!form.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Agregar clase de validación a todo el formulario
-                    $(form).addClass('was-validated');
-                    
-                    // Forzar validación de Select2
-                    $('.select2-universidad').each(function() {
-                        if (!$(this).val()) {
-                            $(this).siblings('.select2-container').addClass('is-invalid');
-                        } else {
-                            $(this).siblings('.select2-container').removeClass('is-invalid');
-                        }
-                    });
-                } else {
-                    console.log('Formulario válido, enviando datos...');
-                }
-            }, false);
-            
-            // Configurar validación en tiempo real para campos de texto
-            $('input[required], textarea[required]').on('input', function() {
-                $(this).removeClass('is-invalid');
-                if (this.checkValidity()) {
-                    $(this).removeClass('is-invalid').addClass('is-valid');
-                } else {
-                    $(this).removeClass('is-valid').addClass('is-invalid');
-                }
-            });
-        }
+$(document).ready(function() {
+    // Inicializar Select2 para el campo de universidad
+    $('#maestria-universidad').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Seleccionar universidad...',
+        allowClear: true
     });
+   
+    // Si estamos en modo edición, cargar los datos de la universidad
+    <?php if($isEdit && !empty($universidad)): ?>
+        setTimeout(function() {
+            $('#maestria-universidad').val('<?php echo $universidad; ?>').trigger('change');
+            const selectedOption = $('#maestria-universidad').find('option:selected');
+            $('#select-pais').val(selectedOption.data('pais') || '<?php echo $pais; ?>');
+            $('#maestria-ciudad').val(selectedOption.data('ciudad') || '<?php echo $ciudad_universidad; ?>');
+            $('#universidad-nombre').val(selectedOption.data('nombre') || '');
+        }, 100);
+    <?php endif; ?>
+
+    // Manejo de cambio de universidad
+    $('#maestria-universidad').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        $('#select-pais').val(selectedOption.data('pais') || '');
+        $('#maestria-ciudad').val(selectedOption.data('ciudad') || '');
+        $('#universidad-nombre').val(selectedOption.data('nombre') || '');
+    });
+
+    // Lista estática de monedas en español
+    const monedas = [
+        { codigo: 'USD', nombre: 'Dólar estadounidense' },
+        { codigo: 'EUR', nombre: 'Euro' },
+        { codigo: 'MXN', nombre: 'Peso mexicano' },
+        { codigo: 'ARS', nombre: 'Peso argentino' },
+        { codigo: 'COP', nombre: 'Peso colombiano' },
+        { codigo: 'PEN', nombre: 'Sol peruano' },
+        { codigo: 'CLP', nombre: 'Peso chileno' },
+        { codigo: 'BRL', nombre: 'Real brasileño' },
+        { codigo: 'UYU', nombre: 'Peso uruguayo' },
+        { codigo: 'PYG', nombre: 'Guaraní paraguayo' },
+        { codigo: 'BOB', nombre: 'Boliviano' },
+        { codigo: 'GTQ', nombre: 'Quetzal guatemalteco' },
+        { codigo: 'DOP', nombre: 'Peso dominicano' },
+        { codigo: 'CRC', nombre: 'Colón costarricense' },
+        { codigo: 'HNL', nombre: 'Lempira hondureño' },
+        { codigo: 'NIO', nombre: 'Córdoba nicaragüense' },
+        { codigo: 'SVC', nombre: 'Colón salvadoreño' },
+        { codigo: 'VES', nombre: 'Bolívar venezolano' },
+        { codigo: 'GBP', nombre: 'Libra esterlina' },
+        { codigo: 'JPY', nombre: 'Yen japonés' },
+        { codigo: 'CNY', nombre: 'Yuan chino' },
+        { codigo: 'KRW', nombre: 'Won surcoreano' },
+        { codigo: 'INR', nombre: 'Rupia india' },
+        { codigo: 'CAD', nombre: 'Dólar canadiense' },
+        { codigo: 'AUD', nombre: 'Dólar australiano' },
+        { codigo: 'CHF', nombre: 'Franco suizo' },
+        { codigo: 'SEK', nombre: 'Corona sueca' },
+        { codigo: 'NOK', nombre: 'Corona noruega' },
+        { codigo: 'DKK', nombre: 'Corona danesa' },
+        { codigo: 'RUB', nombre: 'Rublo ruso' },
+        { codigo: 'TRY', nombre: 'Lira turca' },
+        { codigo: 'ZAR', nombre: 'Rand sudafricano' }
+    ];
+
+    // Obtener la moneda guardada (si estamos en edición)
+    const monedaGuardada = '<?php echo $precio_moneda; ?>';
+
+    // Poblar el dropdown de monedas
+    const monedaSelect = $('#select-moneda');
+    monedaSelect.empty().append('<option value="">Seleccionar moneda...</option>');
+    monedas.sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(moneda => {
+        const isSelected = moneda.codigo === monedaGuardada ? 'selected' : '';
+        monedaSelect.append(
+            `<option value="${moneda.codigo}" ${isSelected}>${moneda.codigo} - ${moneda.nombre}</option>`
+        );
+    });
+
+    // Asegurar que Select2 refleje la selección
+    if (monedaGuardada) {
+        monedaSelect.val(monedaGuardada).trigger('change');
+    }
+
+    // Configurar validación para Select2
+    $('.select2-universidad, #select-moneda').on('change', function() {
+        $(this).valid();
+    });
+
+    // Validación del formulario
+    const form = document.getElementById('formMaestria');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(form).addClass('was-validated');
+                $('.select2-universidad, #select-moneda').each(function() {
+                    if (!$(this).val()) {
+                        $(this).siblings('.select2-container').addClass('is-invalid');
+                    } else {
+                        $(this).siblings('.select2-container').removeClass('is-invalid');
+                    }
+                });
+            } else {
+                console.log('Formulario válido, enviando datos...');
+            }
+        }, false);
+
+        $('input[required], textarea[required]').on('input', function() {
+            $(this).removeClass('is-invalid');
+            if (this.checkValidity()) {
+                $(this).removeClass('is-invalid').addClass('is-valid');
+            } else {
+                $(this).removeClass('is-valid').addClass('is-invalid');
+            }
+        });
+    }
+
+    // Mostrar SweetAlert2 si hay un error de id_num
+    <?php if (isset($error) && !empty($errors)): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            html: '<?php echo addslashes($error); ?>',
+            confirmButtonText: 'Aceptar'
+        });
+    <?php endif; ?>
+
+});
 </script>
